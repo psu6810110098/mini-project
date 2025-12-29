@@ -1,65 +1,134 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
+import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
+import api from '../api/axios';
+import type { LoginResponse } from '../types';
+import type { FieldType } from './types';
 
-const API_URL = 'http://localhost:3000';
+const { Title, Text } = Typography;
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFinish = async (values: FieldType) => {
     try {
-      // Axios automatically stringifies JSON and parses the response
-      const res = await axios.post(`${API_URL}/auth/login`, { 
-        email, 
-        password 
+      setLoading(true);
+      const res = await api.post<LoginResponse>('/auth/login', {
+        email: values.email,
+        password: values.password,
       });
-      
-      // Axios puts the actual response body inside 'data'
+
       const { access_token, user } = res.data;
 
-      // Save to LocalStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      
-      alert('Login Success!');
-      navigate('/dashboard');
 
+      message.success('Login Successful!');
+
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
-      // Axios stores the backend error response in err.response.data
-      const errorMessage = err.response?.data?.message || 'Login Failed';
-      alert(`Error: ${errorMessage}`);
+      const errorMsg = err.response?.data?.message || 'Login Failed';
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <div className="card">
-        <h2>🔐 Login</h2>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            required 
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
-          />
-          <button type="submit">Sign In</button>
-        </form>
-        <p style={{ marginTop: '20px' }}>
-          New here? <Link to="/register" style={{ color: '#646cff' }}>Create Account</Link>
-        </p>
-      </div>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f0f2f5',
+        padding: '1rem',
+      }}
+    >
+      <Card
+        style={{
+          width: '100%',
+          maxWidth: 400,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          borderRadius: 12,
+        }}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center' }}>
+            <Title level={2} style={{ margin: 0, marginBottom: 8 }}>
+              <LoginOutlined /> Login
+            </Title>
+            <Text type="secondary">Welcome to Pet Shop</Text>
+          </div>
+
+          {/* Login Form */}
+          <Form
+            form={form}
+            name="login"
+            onFinish={onFinish}
+            autoComplete="off"
+            layout="vertical"
+            size="large"
+          >
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: 'Please input your email!' },
+                { type: 'email', message: 'Please enter a valid email!' },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Enter your email"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: 'Please input your password!' },
+                { min: 6, message: 'Password must be at least 6 characters!' },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Enter your password"
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                icon={<LoginOutlined />}
+              >
+                Sign In
+              </Button>
+            </Form.Item>
+          </Form>
+
+          {/* Footer Link */}
+          <Text style={{ textAlign: 'center', display: 'block' }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{ fontWeight: 'bold' }}>
+              Register now
+            </Link>
+          </Text>
+        </Space>
+      </Card>
     </div>
   );
 }
