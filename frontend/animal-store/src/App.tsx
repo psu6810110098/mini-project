@@ -1,20 +1,23 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import './App.css'; // Keep your styles
+import HomePage from './pages/HomePage';
+import AdminDashboard from './pages/AdminDashboard';
+import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route: Redirect to Login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        
-        {/* Pages */}
+        {/* Default route: Home page */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Protected Routes */}
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );
