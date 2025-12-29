@@ -1,31 +1,47 @@
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 import { PetStatus } from '../entities/pet.entity';
 
 export class CreatePetDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsString()
+  @IsNotEmpty()
   species: string;
 
   @IsNumber()
   @Min(0)
   price: number;
 
-  @IsNumber()
+  @IsInt()
   @Min(0)
   age: number;
 
   @IsUrl()
   @IsOptional()
-  image?: string;
+  image_url?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
   @IsEnum(PetStatus)
   @IsOptional()
   status?: PetStatus;
 
   @IsArray()
+  @IsInt({ each: true })
   @IsOptional()
-  @IsNumber({}, { each: true }) // เช็คว่าใน Array เป็นตัวเลขทั้งหมด
   tagIds?: number[];
 }

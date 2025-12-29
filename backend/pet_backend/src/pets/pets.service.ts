@@ -11,7 +11,7 @@ export class PetsService {
   constructor(
     @InjectRepository(Pet)
     private petRepository: Repository<Pet>,
-    
+
     @InjectRepository(Tag)
     private tagRepository: Repository<Tag>,
   ) {}
@@ -25,7 +25,17 @@ export class PetsService {
 
     // 2. If tagIds are sent, find them in DB and link them
     if (tagIds && tagIds.length > 0) {
-      const tags = await this.tagRepository.findBy({ id: In(tagIds) });
+      const tags = await this.tagRepository.findBy({
+        id: In(tagIds),
+      });
+
+      // 🔒 CRITICAL: Check if ALL requested tags were found
+      if (tags.length !== tagIds.length) {
+        throw new NotFoundException(
+          `Some tags not found. Requested: ${tagIds.length}, Found: ${tags.length}`,
+        );
+      }
+
       pet.tags = tags; // NestJS handles the join table automatically
     }
 
@@ -40,9 +50,9 @@ export class PetsService {
 
   // --- FIND ONE ---
   async findOne(id: number) {
-    const pet = await this.petRepository.findOne({ 
+    const pet = await this.petRepository.findOne({
       where: { id },
-      relations: ['tags'] 
+      relations: ['tags'],
     });
     if (!pet) throw new NotFoundException(`Pet #${id} not found`);
     return pet;
@@ -51,7 +61,7 @@ export class PetsService {
   // --- UPDATE ---
   async update(id: number, updatePetDto: UpdatePetDto) {
     const { tagIds, ...petData } = updatePetDto;
-    
+
     // 1. Check if pet exists
     const pet = await this.findOne(id);
 
@@ -59,8 +69,18 @@ export class PetsService {
     Object.assign(pet, petData);
 
     // 3. Update tags if provided (replaces old tags)
-    if (tagIds) {
-      const tags = await this.tagRepository.findBy({ id: In(tagIds) });
+    if (tagIds && tagIds.length > 0) {
+      const tags = await this.tagRepository.findBy({
+        id: In(tagIds),
+      });
+
+      // 🔒 CRITICAL: Check if ALL requested tags were found
+      if (tags.length !== tagIds.length) {
+        throw new NotFoundException(
+          `Some tags not found. Requested: ${tagIds.length}, Found: ${tags.length}`,
+        );
+      }
+
       pet.tags = tags;
     }
 

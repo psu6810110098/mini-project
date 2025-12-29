@@ -24,8 +24,8 @@ export class Pet {
   @Column()
   age: number;
 
-  @Column({ default: 'https://via.placeholder.com/150' })
-  image: string;
+  @Column({ name: 'image', default: 'https://via.placeholder.com/150' })
+  image_url: string;
 
   @Column({
     type: 'enum',
