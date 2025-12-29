@@ -1,5 +1,5 @@
 import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Tag } from '../../tags/entities/tag.entity'; // Import Tag เข้ามา
+import { Tag } from '../../tags/entities/tag.entity';
 
 export enum PetStatus {
   AVAILABLE = 'AVAILABLE',
@@ -15,13 +15,17 @@ export class Pet {
   name: string;
 
   @Column()
-  species: string; // เช่น Dog, Cat
+  species: string;
 
-  @Column('decimal')
+  // ✅ แก้ไขตรงนี้: กำหนดความแม่นยำทศนิยม (10 หลัก, ทศนิยม 2 ตำแหน่ง)
+  @Column({ type: 'decimal', precision: 10, scale: 2 }) 
   price: number;
 
+  @Column()
+  age: number;
+
   @Column({ default: 'https://via.placeholder.com/150' })
-  image: string; 
+  image: string;
 
   @Column({
     type: 'enum',
@@ -30,9 +34,7 @@ export class Pet {
   })
   status: PetStatus;
 
-  // --- สร้างความสัมพันธ์ Many-to-Many ---
-  // 1 Pet มีได้หลาย Tags และ 1 Tag อยู่ได้ในหลาย Pets
-  @ManyToMany(() => Tag, { cascade: true }) 
-  @JoinTable() // จำเป็นต้องใส่ @JoinTable ที่ฝั่ง Owner (Pet) เพื่อสร้างตารางกลางอัตโนมัติ
+  @ManyToMany(() => Tag, { cascade: true })
+  @JoinTable()
   tags: Tag[];
 }

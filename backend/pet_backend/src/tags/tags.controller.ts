@@ -11,7 +11,7 @@ import { UserRole } from '../users/entities/user.entity';
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
-  // --- ADMIN ONLY ---
+  // --- ADMIN ONLY (สร้าง) ---
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -19,7 +19,7 @@ export class TagsController {
     return this.tagsService.create(createTagDto);
   }
 
-  // --- PUBLIC ---
+  // --- PUBLIC (ใครก็ดูได้) ---
   @Get()
   findAll() {
     return this.tagsService.findAll();
@@ -30,7 +30,7 @@ export class TagsController {
     return this.tagsService.findOne(+id);
   }
 
-  // --- ADMIN ONLY ---
+  // --- ADMIN ONLY (แก้ไข) ---
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -38,6 +38,7 @@ export class TagsController {
     return this.tagsService.update(+id, updateTagDto);
   }
 
+  // --- ADMIN ONLY (ลบ) ---
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

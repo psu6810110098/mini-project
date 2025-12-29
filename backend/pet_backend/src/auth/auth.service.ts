@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User, UserRole } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +23,7 @@ export class AuthService {
 
   // 1. Register: รับค่า -> Hash Password -> Save
   async register(registerDto: RegisterDto): Promise<User> {
-    const { email, password, full_name, gender, role } = registerDto;
+    const { email, password, full_name, gender } = registerDto;
 
     // เช็คว่า Email ซ้ำไหม
     const existingUser = await this.userRepository.findOne({
@@ -42,7 +42,7 @@ export class AuthService {
       password: hashedPassword,
       full_name,
       gender,
-      role: role || undefined, // ถ้าไม่ส่งมาให้ใช้ Default
+      role: UserRole.USER, // 👈 บังคับใส่ USER เท่านั้น
     });
 
     return this.userRepository.save(user);

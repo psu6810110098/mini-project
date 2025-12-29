@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm'; // <--- Import this
+import { TypeOrmModule } from '@nestjs/typeorm'; // 1. Import นี้
 import { TagsService } from './tags.service';
 import { TagsController } from './tags.controller';
-import { Tag } from './entities/tag.entity'; // <--- Import the Entity
+import { Tag } from './entities/tag.entity'; // 2. Import Entity
 
 @Module({
-  // Register the Tag Entity here so TagsService can use the Repository
-  imports: [TypeOrmModule.forFeature([Tag])], 
-  
+  imports: [TypeOrmModule.forFeature([Tag])], // 3. ใส่บรรทัดนี้สำคัญมาก!
   controllers: [TagsController],
   providers: [TagsService],
 })
