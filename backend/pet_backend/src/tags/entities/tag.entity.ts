@@ -6,5 +6,5 @@ export class Tag {
   id: number;
 
   @Column()
-  name: string;
+  name: string; // ชื่อแท็ก เช่น "Cute", "New Arrival"
 }
