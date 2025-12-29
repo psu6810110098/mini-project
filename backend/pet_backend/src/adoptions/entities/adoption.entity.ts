@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Pet } from '../../pets/entities/pet.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Adoption {
@@ -12,6 +13,7 @@ export class Adoption {
 
   // Relation 1: Adoption นี้เป็นของ User คนไหน
   @ManyToOne(() => User, (user) => user.adoptions)
+  @Exclude({ toPlainOnly: true }) // ✅ Add this decorator
   user: User;
 
   // Relation 2: Adoption นี้รับเลี้ยง Pet ตัวไหน (1 ใบเสร็จ = 1 ตัว)
