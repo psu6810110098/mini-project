@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000';
+import api from '../api/axios';
 
 export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '', 
-    password: '', 
-    full_name: '', 
+    email: '',
+    password: '',
+    full_name: '',
     gender: 'OTHER'
   });
 
@@ -20,9 +18,8 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Cleaner Axios syntax
-      await axios.post(`${API_URL}/auth/register`, formData);
-      
+      await api.post('/auth/register', formData);
+
       alert('Registered Successfully! Please Login.');
       navigate('/login');
 

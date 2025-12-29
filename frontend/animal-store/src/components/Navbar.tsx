@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { User } from '../types';
+import type { User } from '../types';
+
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);

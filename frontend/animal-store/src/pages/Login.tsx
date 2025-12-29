@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000';
+import api from '../api/axios';
+import type { LoginResponse } from '../types';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,24 +11,27 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Axios automatically stringifies JSON and parses the response
-      const res = await axios.post(`${API_URL}/auth/login`, { 
-        email, 
-        password 
+      const res = await api.post<LoginResponse>('/auth/login', {
+        email,
+        password
       });
-      
-      // Axios puts the actual response body inside 'data'
+
       const { access_token, user } = res.data;
 
       // Save to LocalStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       alert('Login Success!');
-      navigate('/dashboard');
+
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
 
     } catch (err: any) {
-      // Axios stores the backend error response in err.response.data
       const errorMessage = err.response?.data?.message || 'Login Failed';
       alert(`Error: ${errorMessage}`);
     }

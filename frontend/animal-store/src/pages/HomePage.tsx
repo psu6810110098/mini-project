@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Pet } from '../types';
+import type { Pet } from '../types';
 import Navbar from '../components/Navbar';
 
 export default function HomePage() {

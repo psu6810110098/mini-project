@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Pet, CreatePetDto, UpdatePetDto, User } from '../types';
+import type { Pet, CreatePetDto, UpdatePetDto, User } from '../types';
 import Navbar from '../components/Navbar';
 
 export default function AdminDashboard() {
