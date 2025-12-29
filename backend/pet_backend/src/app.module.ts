@@ -6,11 +6,14 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
-// Import the new entities
 import { Pet } from './pets/entities/pet.entity';
 import { Tag } from './tags/entities/tag.entity';
+// 1. ✅ Import Adoption เข้ามา
+import { Adoption } from './adoptions/entities/adoption.entity'; 
+
 import { PetsModule } from './pets/pets.module';
 import { TagsModule } from './tags/tags.module';
+import { AdoptionsModule } from './adoptions/adoptions.module';
 
 @Module({
   imports: [
@@ -25,8 +28,10 @@ import { TagsModule } from './tags/tags.module';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        // Add Pet and Tag here so tables are created
-        entities: [User, Pet, Tag], 
+        
+        // 2. ✅ เพิ่ม Adoption เข้าไปใน Array นี้ (สำคัญมาก!)
+        entities: [User, Pet, Tag, Adoption], 
+        
         synchronize: true,
       }),
     }),
@@ -34,6 +39,7 @@ import { TagsModule } from './tags/tags.module';
     AuthModule,
     PetsModule,
     TagsModule,
+    AdoptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

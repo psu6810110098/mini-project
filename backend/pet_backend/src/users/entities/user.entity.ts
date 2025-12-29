@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Adoption } from '../../adoptions/entities/adoption.entity';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -38,6 +39,9 @@ export class User {
     default: UserRole.USER,
   })
   role: UserRole;
+  
+  @OneToMany(() => Adoption, (adoption) => adoption.user)
+  adoptions: Adoption[]
 
   @CreateDateColumn()
   created_at: Date;
