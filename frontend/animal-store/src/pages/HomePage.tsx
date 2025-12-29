@@ -1,7 +1,29 @@
 import { useEffect, useState } from 'react';
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Button,
+  Image,
+  Tag,
+  Empty,
+  Spin,
+  message,
+  Statistic,
+  Space,
+} from 'antd';
+import {
+  ShoppingCartOutlined,
+  DollarOutlined,
+  CalendarOutlined,
+  HomeOutlined,
+} from '@ant-design/icons';
 import api from '../api/axios';
 import type { Pet } from '../types';
 import Navbar from '../components/Navbar';
+
+const { Title, Text, Paragraph } = Typography;
 
 export default function HomePage() {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -13,29 +35,39 @@ export default function HomePage() {
     fetchPets();
   }, []);
 
+  const dispatchCartUpdate = (count: number) => {
+    window.dispatchEvent(
+      new CustomEvent('cartUpdate', { detail: { count } })
+    );
+  };
+
   const fetchPets = async () => {
     try {
       setLoading(true);
       const response = await api.get('/pets');
       setPets(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch pets');
+      const errorMsg = err.response?.data?.message || 'Failed to fetch pets';
+      setError(errorMsg);
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const addToCart = (pet: Pet) => {
-    setCart([...cart, pet]);
-    alert(`${pet.name} added to cart!`);
+    const newCart = [...cart, pet];
+    setCart(newCart);
+    dispatchCartUpdate(newCart.length);
+    message.success(`${pet.name} added to cart!`);
   };
 
   if (loading) {
     return (
       <>
         <Navbar />
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>Loading pets...</p>
+        <div style={{ padding: '4rem', textAlign: 'center' }}>
+          <Spin size="large" tip="Loading pets..." />
         </div>
       </>
     );
@@ -45,9 +77,15 @@ export default function HomePage() {
     return (
       <>
         <Navbar />
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: 'red' }}>{error}</p>
-          <button onClick={fetchPets}>Retry</button>
+        <div style={{ padding: '4rem', textAlign: 'center' }}>
+          <Empty
+            description={error}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          >
+            <Button type="primary" onClick={fetchPets}>
+              Try Again
+            </Button>
+          </Empty>
         </div>
       </>
     );
@@ -56,88 +94,122 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ margin: 0 }}>🐶 Our Pets</h1>
-          <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
-            🛒 Cart: {cart.length} items
-          </div>
-        </div>
+      <div
+        style={{
+          padding: '2rem',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          backgroundColor: '#f0f2f5',
+          minHeight: '100vh',
+        }}
+      >
+        {/* Header Section */}
+        <Card style={{ marginBottom: '2rem' }}>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col xs={24} md={12}>
+              <Space direction="vertical" size="small">
+                <Title level={2} style={{ margin: 0 }}>
+                  <HomeOutlined /> Our Pets
+                </Title>
+                <Text type="secondary">Find your perfect companion</Text>
+              </Space>
+            </Col>
+            <Col xs={24} md={6}>
+              <Statistic
+                title="Cart Items"
+                value={cart.length}
+                prefix={<ShoppingCartOutlined />}
+                valueStyle={{ color: '#FF8C00' }}
+              />
+            </Col>
+          </Row>
+        </Card>
 
+        {/* Pets Grid */}
         {pets.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-            <p style={{ fontSize: '1.2rem', color: '#666' }}>No pets available at the moment.</p>
-          </div>
+          <Card>
+            <Empty
+              description="No pets available at the moment"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          </Card>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1.5rem'
-          }}>
+          <Row gutter={[16, 16]}>
             {pets.map((pet) => (
-              <div
-                key={pet.id}
-                style={{
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  backgroundColor: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <img
-                  src={pet.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}
-                  alt={pet.name}
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    objectFit: 'cover',
-                    backgroundColor: '#f0f0f0'
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                  }}
-                />
-                <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>{pet.name}</h3>
-                  <p style={{ margin: '0.25rem 0', color: '#666', fontSize: '0.9rem' }}>
-                    🏷️ {pet.species}
-                  </p>
-                  <p style={{ margin: '0.25rem 0', color: '#666', fontSize: '0.9rem' }}>
-                    🎂 {pet.age} years old
-                  </p>
-                  <p style={{ margin: '0.5rem 0', fontSize: '1.2rem', fontWeight: 'bold', color: '#646cff' }}>
-                    ${pet.price.toFixed(2)}
-                  </p>
-                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#555', flex: 1 }}>
-                    {pet.description}
-                  </p>
-                  <button
-                    onClick={() => addToCart(pet)}
-                    disabled={!pet.is_available}
-                    style={{
-                      marginTop: '1rem',
-                      padding: '0.75rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      backgroundColor: pet.is_available ? '#646cff' : '#ccc',
-                      color: 'white',
-                      cursor: pet.is_available ? 'pointer' : 'not-allowed',
-                      fontSize: '1rem',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {pet.is_available ? 'Add to Cart' : 'Not Available'}
-                  </button>
-                </div>
-              </div>
+              <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
+                <Card
+                  hoverable
+                  cover={
+                    <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
+                      <Image
+                        src={pet.image_url}
+                        alt={pet.name}
+                        height={200}
+                        width="100%"
+                        style={{ objectFit: 'cover' }}
+                        preview={false}
+                        fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJF9kT1Iw0AcxV9TpVVeqDkeY73QULXg4VZzFYRxtcSq2wp80q8wLhDqYpCwqgloLGGQiEF4Kou4q4orL8Lnv78/w73C0v+IKRVc2n0r5M7dFUCQA/KC8UwAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVHja7dEBDQAAAMKg909tDjegAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4GQAAAeTJ4i0AAAAASUVORK5CYII="
+                      />
+                      {!pet.is_available && (
+                        <Tag
+                          color="volcano"
+                          style={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            fontSize: '12px',
+                            padding: '4px 8px',
+                          }}
+                        >
+                          Sold Out
+                        </Tag>
+                      )}
+                    </div>
+                  }
+                  actions={[
+                    <Button
+                      type="primary"
+                      icon={<ShoppingCartOutlined />}
+                      onClick={() => addToCart(pet)}
+                      disabled={!pet.is_available}
+                      block
+                    >
+                      {pet.is_available ? 'Add to Cart' : 'Not Available'}
+                    </Button>,
+                  ]}
+                >
+                  <Card.Meta
+                    title={
+                      <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                        <Text strong style={{ fontSize: '1.1rem' }}>
+                          {pet.name}
+                        </Text>
+                        <Tag color="orange">{pet.species}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                        <Space wrap>
+                          <Text type="secondary">
+                            <CalendarOutlined /> {pet.age} years
+                          </Text>
+                          <Text type="danger" strong>
+                            <DollarOutlined /> ${pet.price.toFixed(2)}
+                          </Text>
+                        </Space>
+                        <Paragraph
+                          ellipsis={{ rows: 2 }}
+                          style={{ marginBottom: 0, color: '#666' }}
+                        >
+                          {pet.description}
+                        </Paragraph>
+                      </Space>
+                    }
+                  />
+                </Card>
+              </Col>
             ))}
-          </div>
+          </Row>
         )}
       </div>
     </>

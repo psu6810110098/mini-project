@@ -1,18 +1,39 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Layout, Menu, Button, Avatar, Badge, Dropdown, Space } from 'antd';
+import {
+  UserOutlined,
+  ShoppingCartOutlined,
+  LogoutOutlined,
+  HomeOutlined,
+  DashboardOutlined,
+} from '@ant-design/icons';
 import type { User } from '../types';
+import type { MenuProps } from 'antd';
 
+const { Header } = Layout;
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in on mount
     const userStr = localStorage.getItem('user');
     if (userStr) {
       setUser(JSON.parse(userStr));
     }
+
+    // Listen for cart updates
+    const handleCartUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ count: number }>;
+      setCartCount(customEvent.detail.count);
+    };
+
+    window.addEventListener('cartUpdate', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdate', handleCartUpdate);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -22,88 +43,116 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  return (
-    <nav style={{
-      backgroundColor: '#fff',
-      padding: '1rem 2rem',
-      borderBottom: '1px solid #e0e0e0',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000,
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#333' }}>
-          🐾 Pet Shop
-        </h1>
-      </Link>
+  // Menu items for logged-in users
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'home',
+      icon: <HomeOutlined />,
+      label: <Link to="/">Home</Link>,
+    },
+    ...(user?.role === 'admin'
+      ? [
+          {
+            key: 'admin',
+            icon: <DashboardOutlined />,
+            label: <Link to="/admin">Admin Dashboard</Link>,
+          },
+        ]
+      : []),
+  ];
 
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+  // User dropdown menu items
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'email',
+      label: user?.email,
+      disabled: true,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Logout',
+      onClick: handleLogout,
+    },
+  ];
+
+  return (
+    <Header
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #f0f0f0',
+        padding: '0 2rem',
+        height: '64px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      }}
+    >
+      {/* Logo */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '#FF8C00',
+          cursor: 'pointer',
+        }}
+        onClick={() => navigate('/')}
+      >
+        🐾 Pet Shop
+      </div>
+
+      {/* Navigation and Actions */}
+      <Space size="large">
         {user ? (
           <>
-            <span style={{ color: '#666', fontSize: '0.9rem' }}>
-              Welcome, {user.email}
-            </span>
-            <Link
-              to="/"
+            {/* Navigation Menu */}
+            <Menu
+              mode="horizontal"
+              items={menuItems}
               style={{
-                padding: '0.5rem 1rem',
-                textDecoration: 'none',
-                color: '#333',
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-                backgroundColor: '#f9f9f9'
-              }}
-            >
-              Home
-            </Link>
-            {user.role === 'admin' && (
-              <Link
-                to="/admin"
-                style={{
-                  padding: '0.5rem 1rem',
-                  textDecoration: 'none',
-                  color: 'white',
-                  borderRadius: '4px',
-                  backgroundColor: '#646cff'
-                }}
-              >
-                Admin Dashboard
-              </Link>
-            )}
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: '0.5rem 1rem',
+                flex: 1,
+                minWidth: 0,
                 border: 'none',
-                borderRadius: '4px',
-                backgroundColor: '#ff4d4f',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
+                backgroundColor: 'transparent',
               }}
-            >
-              Logout
-            </button>
+              selectable
+              defaultSelectedKeys={['home']}
+            />
+
+            {/* Shopping Cart with Badge */}
+            <Badge count={cartCount} offset={[-5, 5]}>
+              <Button
+                type="primary"
+                icon={<ShoppingCartOutlined />}
+                size="large"
+                onClick={() => navigate('/')}
+              >
+                Cart
+              </Button>
+            </Badge>
+
+            {/* User Dropdown */}
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar size="large" icon={<UserOutlined />} />
+              </Space>
+            </Dropdown>
           </>
         ) : (
-          <Link
-            to="/login"
-            style={{
-              padding: '0.5rem 1rem',
-              textDecoration: 'none',
-              color: 'white',
-              borderRadius: '4px',
-              backgroundColor: '#646cff'
-            }}
-          >
+          <Button type="primary" size="large" onClick={() => navigate('/login')}>
             Login
-          </Link>
+          </Button>
         )}
-      </div>
-    </nav>
+      </Space>
+    </Header>
   );
 }
