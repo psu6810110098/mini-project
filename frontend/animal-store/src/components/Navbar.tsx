@@ -1,158 +1,69 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { Layout, Menu, Button, Avatar, Badge, Dropdown, Space } from 'antd';
-import {
-  UserOutlined,
-  ShoppingCartOutlined,
-  LogoutOutlined,
-  HomeOutlined,
-  DashboardOutlined,
-} from '@ant-design/icons';
-import type { User } from '../types';
-import type { MenuProps } from 'antd';
+import axiosInstance from '../api/axios';
+import { useCart } from '../context/CartContext'; // Import hook
 
-const { Header } = Layout;
-
-export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [cartCount, setCartCount] = useState(0);
+const Navbar = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      setUser(JSON.parse(userStr));
-    }
-
-    // Listen for cart updates
-    const handleCartUpdate = (e: Event) => {
-      const customEvent = e as CustomEvent<{ count: number }>;
-      setCartCount(customEvent.detail.count);
-    };
-
-    window.addEventListener('cartUpdate', handleCartUpdate);
-    return () => {
-      window.removeEventListener('cartUpdate', handleCartUpdate);
-    };
-  }, []);
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  const { cart } = useCart(); // Access cart state
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+    localStorage.removeItem('role');
+    delete axiosInstance.defaults.headers.common['Authorization'];
     navigate('/login');
   };
 
-  // Menu items for logged-in users
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'home',
-      icon: <HomeOutlined />,
-      label: <Link to="/">Home</Link>,
-    },
-    ...(user?.role === 'admin'
-      ? [
-          {
-            key: 'admin',
-            icon: <DashboardOutlined />,
-            label: <Link to="/admin">Admin Dashboard</Link>,
-          },
-        ]
-      : []),
-  ];
-
-  // User dropdown menu items
-  const userMenuItems: MenuProps['items'] = [
-    {
-      key: 'email',
-      label: user?.email,
-      disabled: true,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Logout',
-      onClick: handleLogout,
-    },
-  ];
-
   return (
-    <Header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#fff',
-        borderBottom: '1px solid #f0f0f0',
-        padding: '0 2rem',
-        height: '64px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-      }}
-    >
-      {/* Logo */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          fontSize: '1.5rem',
-          fontWeight: 'bold',
-          color: '#FF8C00',
-          cursor: 'pointer',
-        }}
-        onClick={() => navigate('/')}
-      >
-        🐾 Pet Shop
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="text-xl font-bold text-green-600 flex items-center gap-2">
+              🐾 PetAdoption
+            </Link>
+          </div>
+          
+          <div className="flex items-center space-x-6">
+            <Link to="/" className="text-gray-700 hover:text-green-600 font-medium">Home</Link>
+            
+            {/* Cart Link */}
+            <Link to="/cart" className="relative text-gray-700 hover:text-green-600 font-medium flex items-center">
+              <span>Cart</span>
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                  {cart.length}
+                </span>
+              )}
+            </Link>
+
+            {token ? (
+              <>
+                <Link to="/dashboard" className="text-gray-700 hover:text-green-600 font-medium">Dashboard</Link>
+                {role === 'admin' && (
+                  <Link to="/admin" className="text-gray-700 hover:text-green-600 font-medium">Admin</Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-green-600 font-medium">Login</Link>
+                <Link to="/register" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Navigation and Actions */}
-      <Space size="large">
-        {user ? (
-          <>
-            {/* Navigation Menu */}
-            <Menu
-              mode="horizontal"
-              items={menuItems}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                border: 'none',
-                backgroundColor: 'transparent',
-              }}
-              selectable
-              defaultSelectedKeys={['home']}
-            />
-
-            {/* Shopping Cart with Badge */}
-            <Badge count={cartCount} offset={[-5, 5]}>
-              <Button
-                type="primary"
-                icon={<ShoppingCartOutlined />}
-                size="large"
-                onClick={() => navigate('/')}
-              >
-                Cart
-              </Button>
-            </Badge>
-
-            {/* User Dropdown */}
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar size="large" icon={<UserOutlined />} />
-              </Space>
-            </Dropdown>
-          </>
-        ) : (
-          <Button type="primary" size="large" onClick={() => navigate('/login')}>
-            Login
-          </Button>
-        )}
-      </Space>
-    </Header>
+    </nav>
   );
-}
+};
+
+export default Navbar;

@@ -1,4 +1,7 @@
+import type { ReactNode } from "react";
+
 export interface Pet {
+  status: ReactNode;
   id: string;
   name: string;
   species: string;

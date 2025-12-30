@@ -1,53 +1,31 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, theme } from 'antd';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-
-// Custom theme configuration for Pet Shop
-const customTheme = {
-  token: {
-    colorPrimary: '#FF8C00', // Orange - friendly and energetic for pets
-    colorSuccess: '#52c41a',
-    colorWarning: '#faad14',
-    colorError: '#ff4d4f',
-    colorInfo: '#1890ff',
-    borderRadius: 8,
-    fontSize: 14,
-  },
-  components: {
-    Button: {
-      borderRadius: 8,
-      controlHeight: 40,
-    },
-    Input: {
-      borderRadius: 8,
-      controlHeight: 40,
-    },
-    Card: {
-      borderRadius: 12,
-    },
-  },
-};
+import Cart from './pages/Cart'; // Import Cart page
+import { CartProvider } from './context/CartContext'; // Import Provider
+import './App.css';
 
 function App() {
   return (
-    <ConfigProvider theme={customTheme}>
-      <BrowserRouter>
-        <Routes>
-          {/* Default route: Home page */}
-          <Route path="/" element={<HomePage />} />
-
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Protected Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Routes>
-      </BrowserRouter>
-    </ConfigProvider>
+    <CartProvider> {/* WRAP HERE */}
+      <Router>
+        <div className="min-h-screen bg-gray-100">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/cart" element={<Cart />} /> {/* Add Route */}
+          </Routes>
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 
