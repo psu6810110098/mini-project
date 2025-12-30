@@ -28,8 +28,7 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.userRepository.findOne({
       where: { id },
-      // ✅ Join ตาราง: เอาประวัติ Adoption และข้อมูล Pet ในใบเสร็จนั้นมาด้วย
-      relations: ['adoptions', 'adoptions.pet'], 
+      relations: ['adoptions', 'adoptions.pet'], // This causes the loop
     });
 
     if (!user) {
