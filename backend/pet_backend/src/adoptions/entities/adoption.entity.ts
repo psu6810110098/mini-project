@@ -13,7 +13,7 @@ export class Adoption {
 
   // Relation 1: Adoption นี้เป็นของ User คนไหน
   @ManyToOne(() => User, (user) => user.adoptions)
-  @Exclude({ toPlainOnly: true }) // ✅ Add this decorator
+  @Exclude() // Exclude user from serialization to prevent circular reference
   user: User;
 
   // Relation 2: Adoption นี้รับเลี้ยง Pet ตัวไหน (1 ใบเสร็จ = 1 ตัว)
