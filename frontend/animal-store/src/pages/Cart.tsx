@@ -27,9 +27,6 @@ export default function Cart() {
   const [loading, setLoading] = useState(false);
 
   // Catppuccin colors
-  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
-  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
-  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
   const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   const handleCheckout = async () => {
@@ -78,7 +75,7 @@ export default function Cart() {
 
   if (cart.length === 0) {
     return (
-      <div style={{ padding: '4rem', textAlign: 'center', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
+      <div style={{ padding: '4rem 3rem', textAlign: 'center' }}>
         <Empty
           description="Your cart is empty"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -92,7 +89,7 @@ export default function Cart() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
+    <div style={{ padding: '2rem 3rem' }}>
       <Title level={2}><ShoppingOutlined /> Your Cart</Title>
       
       <Row gutter={24}>
@@ -132,10 +129,8 @@ export default function Cart() {
               </List.Item>
             )}
             style={{
-              backgroundColor: cardBg,
               padding: '1.5rem',
               borderRadius: '12px',
-              boxShadow: `0 2px 8px ${shadowColor}`,
               border: isDark ? `1px solid ${borderColor}` : 'none',
             }}
           />
@@ -148,9 +143,7 @@ export default function Cart() {
             style={{
               position: 'sticky',
               top: '2rem',
-              backgroundColor: cardBg,
               borderRadius: '12px',
-              boxShadow: `0 2px 8px ${shadowColor}`,
               border: isDark ? `1px solid ${borderColor}` : 'none',
             }}
           >

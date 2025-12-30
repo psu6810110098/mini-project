@@ -39,9 +39,6 @@ export default function PetDetail() {
   const { isDark } = useTheme();
 
   // Catppuccin colors
-  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
-  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
-  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
   const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   useEffect(() => {
@@ -100,7 +97,7 @@ export default function PetDetail() {
   const inCart = isInCart(Number(pet.id));
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
+    <div style={{ padding: '2rem 3rem' }}>
       <Button
         icon={<LeftOutlined />}
         onClick={() => navigate(-1)}
@@ -111,9 +108,7 @@ export default function PetDetail() {
 
       <Card
         style={{
-          backgroundColor: cardBg,
           borderRadius: '12px',
-          boxShadow: `0 2px 8px ${shadowColor}`,
           border: isDark ? `1px solid ${borderColor}` : 'none',
         }}
       >

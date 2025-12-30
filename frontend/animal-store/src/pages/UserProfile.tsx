@@ -83,28 +83,14 @@ export default function UserProfile() {
   }
 
   // Catppuccin colors
-  const bgColor = isDark ? catppuccin.base : '#f5f5f5';
-  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
-  const textColor = isDark ? catppuccin.text : '#000000';
-  const textSecondary = isDark ? catppuccin.subtext0 : '#8c8c8c';
-  const borderColor = isDark ? catppuccin.surface1 : '#d9d9d9';
-  const accentColor = isDark ? catppuccin.green : '#52c41a';
-  const cardHoverBg = isDark ? catppuccin.surface1 : '#fafafa';
-  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+  const accentColor = catppuccin.green;
+  const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   return (
-    <div
-      style={{
-        padding: '2rem',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        backgroundColor: bgColor,
-        minHeight: 'calc(100vh - 64px)',
-      }}
-    >
+    <div style={{ padding: '2rem 3rem' }}>
       {/* Page Header */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <Title level={2} style={{ margin: 0, color: textColor }}>
+        <Title level={2} style={{ margin: 0 }}>
           <IdcardOutlined style={{ color: accentColor }} /> My Profile
         </Title>
         <Text type="secondary">Manage your account and view adoption history</Text>
@@ -115,9 +101,7 @@ export default function UserProfile() {
         <Col xs={24} lg={8} xl={6}>
           <Card
             style={{
-              backgroundColor: cardBg,
               borderRadius: '12px',
-              boxShadow: `0 2px 8px ${shadowColor}`,
               border: isDark ? `1px solid ${borderColor}` : 'none',
             }}
           >
@@ -133,7 +117,7 @@ export default function UserProfile() {
                   }}
                 />
                 <div>
-                  <Title level={4} style={{ margin: '0 0 0.5rem 0', color: textColor }}>
+                  <Title level={4} style={{ margin: '0 0 0.5rem 0' }}>
                     {user.full_name || 'User'}
                   </Title>
                   <Tag color="blue" style={{ marginBottom: '0.5rem' }}>
@@ -151,7 +135,7 @@ export default function UserProfile() {
                     Email
                   </Text>
                   <div style={{ marginTop: '4px' }}>
-                    <Text style={{ color: textColor, fontSize: '1rem' }}>
+                    <Text style={{ fontSize: '1rem' }}>
                       <MailOutlined style={{ marginRight: '8px', color: accentColor }} />
                       {user.email}
                     </Text>
@@ -163,7 +147,7 @@ export default function UserProfile() {
                     User ID
                   </Text>
                   <div style={{ marginTop: '4px' }}>
-                    <Text style={{ color: textColor, fontSize: '1rem' }}>
+                    <Text style={{ fontSize: '1rem' }}>
                       #{user.id}
                     </Text>
                   </div>
@@ -174,7 +158,7 @@ export default function UserProfile() {
                     Total Adoptions
                   </Text>
                   <div style={{ marginTop: '4px' }}>
-                    <Text style={{ color: textColor, fontSize: '1.1rem', fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
                       {user.adoptions?.length || 0} pets
                     </Text>
                   </div>
@@ -217,15 +201,13 @@ export default function UserProfile() {
             title={
               <Space size="large">
                 <CalendarOutlined style={{ color: accentColor, fontSize: '1.2rem' }} />
-                <span style={{ color: textColor, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
                   Adoption History
                 </span>
               </Space>
             }
             style={{
-              backgroundColor: cardBg,
               borderRadius: '12px',
-              boxShadow: `0 2px 8px ${shadowColor}`,
               border: isDark ? `1px solid ${borderColor}` : 'none',
             }}
           >
@@ -255,7 +237,6 @@ export default function UserProfile() {
                     <Card
                       hoverable
                       style={{
-                        backgroundColor: cardHoverBg,
                         borderRadius: '8px',
                         overflow: 'hidden',
                       }}
@@ -280,7 +261,7 @@ export default function UserProfile() {
                       }
                     >
                       <div style={{ padding: '4px 0' }}>
-                        <Title level={5} style={{ margin: '0 0 8px 0', color: textColor }}>
+                        <Title level={5} style={{ margin: '0 0 8px 0' }}>
                           {adoption.pet.name}
                         </Title>
                         <Space direction="vertical" size="small" style={{ width: '100%' }}>

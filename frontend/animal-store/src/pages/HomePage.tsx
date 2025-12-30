@@ -39,10 +39,6 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   // Catppuccin colors
-  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
-  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
-  const cardHoverBg = isDark ? catppuccin.surface1 : '#fafafa';
-  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
   const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   useEffect(() => {
@@ -98,15 +94,13 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
+    <div style={{ padding: '2rem 3rem' }}>
 
       {/* Header Section */}
       <Card
         style={{
           marginBottom: '2rem',
-          backgroundColor: cardBg,
           borderRadius: '12px',
-          boxShadow: `0 2px 8px ${shadowColor}`,
           border: isDark ? `1px solid ${borderColor}` : 'none',
         }}
       >
@@ -124,7 +118,7 @@ export default function HomePage() {
 
       {/* Pets Grid */}
       {pets.length === 0 ? (
-        <Card style={{ backgroundColor: cardBg, borderRadius: '12px', border: isDark ? `1px solid ${borderColor}` : 'none' }}>
+        <Card style={{ borderRadius: '12px', border: isDark ? `1px solid ${borderColor}` : 'none' }}>
           <Empty description="No pets available at the moment" image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </Card>
       ) : (
@@ -139,10 +133,8 @@ export default function HomePage() {
                   hoverable
                   onClick={() => navigate(`/pet/${pet.id}`)}
                   style={{
-                    backgroundColor: cardBg,
                     borderRadius: '12px',
                     overflow: 'hidden',
-                    boxShadow: `0 2px 8px ${shadowColor}`,
                     border: isDark ? `1px solid ${borderColor}` : 'none',
                   }}
                   cover={

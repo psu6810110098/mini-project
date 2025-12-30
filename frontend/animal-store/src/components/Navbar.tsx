@@ -10,6 +10,7 @@ import {
   Typography,
   Switch,
   Tooltip,
+  theme,
 } from 'antd';
 import {
   ShoppingCartOutlined,
@@ -35,6 +36,7 @@ const Navbar = () => {
   const { cart } = useCart();
   const { user, logout } = useAuth();
   const { mode, toggleTheme, isDark } = useTheme();
+  const { token } = theme.useToken();
 
   const handleLogout = () => {
     logout();
@@ -94,12 +96,6 @@ const Navbar = () => {
     }
   }
 
-  // Catppuccin colors
-  const bgColor = isDark ? catppuccin.mantle : '#ffffff';
-  const borderColor = isDark ? catppuccin.surface0 : '#e8e8e8';
-  const logoColor = isDark ? catppuccin.green : '#52c41a';
-  const switchColor = isDark ? catppuccin.green : '#8c8c8c';
-
   return (
     <Header
       style={{
@@ -111,9 +107,8 @@ const Navbar = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 2rem',
-        backgroundColor: bgColor,
-        boxShadow: isDark ? `0 2px 8px rgba(0, 0, 0, 0.3)` : '0 2px 8px rgba(0,0,0,0.06)',
-        borderBottom: isDark ? `1px solid ${borderColor}` : 'none',
+        backgroundColor: token.colorBgContainer,
+        borderBottom: isDark ? `1px solid ${token.colorBorder}` : 'none',
       }}
     >
       {/* Logo */}
@@ -131,7 +126,7 @@ const Navbar = () => {
             strong
             style={{
               fontSize: '1.25rem',
-              color: logoColor,
+              color: token.colorPrimary,
               margin: 0,
             }}
           >
@@ -162,7 +157,7 @@ const Navbar = () => {
             checkedChildren={<BulbFilled />}
             unCheckedChildren={<BulbOutlined />}
             style={{
-              backgroundColor: switchColor,
+              backgroundColor: isDark ? token.colorPrimary : undefined,
             }}
           />
         </Tooltip>
@@ -172,7 +167,7 @@ const Navbar = () => {
             <Avatar
               icon={<UserOutlined />}
               style={{
-                backgroundColor: logoColor,
+                backgroundColor: token.colorPrimary,
                 cursor: 'pointer',
               }}
               size="large"
@@ -190,7 +185,6 @@ const Navbar = () => {
             <Button
               type="primary"
               onClick={() => navigate('/register')}
-              style={{ backgroundColor: logoColor }}
             >
               Register
             </Button>
