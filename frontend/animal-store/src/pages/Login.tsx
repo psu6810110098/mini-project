@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
+import { Form, Input, Button, Card, Typography, message, Space, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
 import api from '../api/axios';
 import type { LoginResponse } from '../types';
 import type { FieldType } from './types';
+import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  const onFinish = async (values: FieldType) => {
+  const onFinish = async (values: FieldType & { remember?: boolean }) => {
     try {
       setLoading(true);
       const res = await api.post<LoginResponse>('/auth/login', {
@@ -23,13 +25,13 @@ export default function Login() {
 
       const { access_token, user } = res.data;
 
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Use AuthContext login function - this will update Navbar automatically
+      login(access_token, user, values.remember);
 
       message.success('Login Successful!');
 
       // Redirect based on user role
-      if (user.role === 'admin') {
+      if (user.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate('/');
@@ -78,6 +80,7 @@ export default function Login() {
             autoComplete="off"
             layout="vertical"
             size="large"
+            initialValues={{ remember: true }}
           >
             <Form.Item
               label="Email"
@@ -98,13 +101,18 @@ export default function Login() {
               name="password"
               rules={[
                 { required: true, message: 'Please input your password!' },
-                { min: 6, message: 'Password must be at least 6 characters!' },
               ]}
             >
               <Input.Password
                 prefix={<LockOutlined />}
                 placeholder="Enter your password"
               />
+            </Form.Item>
+
+            <Form.Item>
+              <Form.Item name="remember" valuePropName="checked" noStyle>
+                <Checkbox>Remember me</Checkbox>
+              </Form.Item>
             </Form.Item>
 
             <Form.Item>
