@@ -25,6 +25,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cart]);
 
   const addToCart = (pet: Pet) => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      message.warning('Please login to add pets to cart');
+      return;
+    }
+
     setCart((prev) => {
       if (prev.find((p) => p.id === pet.id)) {
         message.warning(`${pet.name} is already in your cart`);
@@ -37,11 +44,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const removeFromCart = (petId: number) => {
     setCart((prev) => prev.filter((item) => item.id !== String(petId)));
-    message.info('Item removed from cart');
+    message.success('Item removed from cart');
   };
 
   const clearCart = () => {
     setCart([]);
+    message.info('Cart cleared');
   };
 
   const isInCart = (petId: number) => {

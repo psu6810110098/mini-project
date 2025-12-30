@@ -21,8 +21,6 @@ import {
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { Pet } from '../types';
-import Navbar from '../components/Navbar';
-// 1. Import useCart
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,32 +54,24 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <>
-        <Navbar />
-        <div style={{ padding: '4rem', textAlign: 'center' }}>
-          <Spin size="large" />
-        </div>
-      </>
+      <div style={{ padding: '4rem', textAlign: 'center' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Navbar />
-        <div style={{ padding: '4rem', textAlign: 'center' }}>
-          <Empty description={error} image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            <Button type="primary" onClick={fetchPets}>Try Again</Button>
-          </Empty>
-        </div>
-      </>
+      <div style={{ padding: '4rem', textAlign: 'center' }}>
+        <Empty description={error} image={Empty.PRESENTED_IMAGE_SIMPLE}>
+          <Button type="primary" onClick={fetchPets}>Try Again</Button>
+        </Empty>
+      </div>
     );
   }
 
   return (
-    <>
-      <Navbar />
-      <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
+    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
         
         {/* Header Section */}
         <Card style={{ marginBottom: '2rem' }}>
@@ -127,6 +117,7 @@ export default function HomePage() {
                 <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
                   <Card
                     hoverable
+                    onClick={() => navigate(`/pet/${pet.id}`)}
                     cover={
                       <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
                         <Image
@@ -149,7 +140,10 @@ export default function HomePage() {
                       <Button
                         type={inCart ? 'default' : 'primary'}
                         icon={inCart ? <CheckOutlined /> : <ShoppingCartOutlined />}
-                        onClick={() => addToCart(pet)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(pet);
+                        }}
                         disabled={!isAvailable || inCart}
                         block
                       >
@@ -170,6 +164,15 @@ export default function HomePage() {
                             <Text type="secondary"><CalendarOutlined /> {pet.age} years</Text>
                             <Text type="success" strong><DollarOutlined /> {Number(pet.price).toFixed(2)}</Text>
                           </Space>
+                          {pet.tags && pet.tags.length > 0 && (
+                            <Space wrap size="small">
+                              {pet.tags.map((tag) => (
+                                <Tag key={tag.id} color="purple" style={{ fontSize: '0.8rem' }}>
+                                  {tag.name}
+                                </Tag>
+                              ))}
+                            </Space>
+                          )}
                         </Space>
                       }
                     />
@@ -180,6 +183,5 @@ export default function HomePage() {
           </Row>
         )}
       </div>
-    </>
   );
 }
