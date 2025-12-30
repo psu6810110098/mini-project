@@ -10,7 +10,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Switch,
   Select,
   message,
   Space,
@@ -19,6 +18,7 @@ import {
   Spin,
   Row,
   Col,
+  Statistic,
 } from 'antd';
 import {
   PlusOutlined,
@@ -28,16 +28,21 @@ import {
   DashboardOutlined,
   FilterOutlined,
   ClearOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '../api/axios';
-import type { Pet, CreatePetDto, Tag as TagType, User } from '../types';
+import type { Pet, CreatePetDto, Tag as TagType } from '../types';
+import { PetStatus, UserRole } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [pets, setPets] = useState<Pet[]>([]);
   const [filteredPets, setFilteredPets] = useState<Pet[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
@@ -45,30 +50,28 @@ export default function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [selectedTagFilter, setSelectedTagFilter] = useState<number | undefined>();
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const userData = JSON.parse(userStr);
-      setUser(userData);
-      if (userData.role !== 'admin') {
-        message.error('Access Denied. Admin only.');
-        navigate('/');
-      }
-    } else {
-      navigate('/login');
-    }
-  }, [navigate]);
+  // Business Stats
+  const totalInventory = pets.length;
+  const soldPets = pets.filter((p) => p.status === PetStatus.SOLD);
+  const salesPerformance = soldPets.length;
+  const totalRevenue = soldPets.reduce((sum, pet) => sum + Number(pet.price), 0);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
-      fetchPets();
-      fetchTags();
+    if (!user) {
+      navigate('/login');
+      return;
     }
-  }, [user]);
+    if (user.role !== UserRole.ADMIN) {
+      message.error('Access Denied. Admin only.');
+      navigate('/');
+      return;
+    }
+    fetchPets();
+    fetchTags();
+  }, [user, navigate]);
 
   const fetchPets = async () => {
     try {
@@ -129,7 +132,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (id: string | number) => {
+  const handleDelete = async (id: number) => {
     try {
       await api.delete(`/pets/${id}`);
       message.success('Pet deleted successfully!');
@@ -148,8 +151,9 @@ export default function AdminDashboard() {
       age: pet.age,
       price: pet.price,
       image_url: pet.image_url,
-      is_available: pet.is_available,
-      tagIds: pet.tags?.map((tag) => tag.id) || [],
+      description: '', // Backend doesn't return description in GET
+      status: pet.status,
+      tagIds: pet.tag?.map((tag) => tag.id) || [],
     });
     setModalVisible(true);
   };
@@ -157,7 +161,7 @@ export default function AdminDashboard() {
   const openCreateModal = () => {
     setEditingPet(null);
     form.resetFields();
-    form.setFieldsValue({ is_available: true, tagIds: [] });
+    form.setFieldsValue({ status: PetStatus.AVAILABLE, tagIds: [] });
     setModalVisible(true);
   };
 
@@ -167,7 +171,7 @@ export default function AdminDashboard() {
       setFilteredPets(pets);
     } else {
       const filtered = pets.filter((pet) =>
-        pet.tags?.some((tag) => tag.id === tagId)
+        pet.tag?.some((tag) => tag.id === tagId)
       );
       setFilteredPets(filtered);
     }
@@ -191,7 +195,7 @@ export default function AdminDashboard() {
           width={60}
           height={60}
           style={{ objectFit: 'cover', borderRadius: '8px' }}
-          fallback="https://via.placeholder.com/60"
+          fallback="https://images.unsplash.com/vector-1739806775546-65ab0a4f27ca?q=80&w=1480&auto=format&fit=crop"
         />
       ),
     },
@@ -230,8 +234,8 @@ export default function AdminDashboard() {
     },
     {
       title: 'Tags',
-      dataIndex: 'tags',
-      key: 'tags',
+      dataIndex: 'tag',
+      key: 'tag',
       width: 200,
       render: (petTags: TagType[]) => (
         <Space size="small" wrap>
@@ -243,7 +247,8 @@ export default function AdminDashboard() {
             ))
           ) : (
             <Text type="secondary">No tags</Text>
-          )}
+          )
+        }
         </Space>
       ),
     },
@@ -252,14 +257,14 @@ export default function AdminDashboard() {
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (status: string) => (
-        <Tag color={status === 'AVAILABLE' ? 'success' : 'error'}>
-          {status === 'AVAILABLE' ? 'Available' : 'Sold'}
+      render: (status: PetStatus) => (
+        <Tag color={status === PetStatus.AVAILABLE ? 'success' : 'error'}>
+          {status === PetStatus.AVAILABLE ? 'Available' : 'Sold'}
         </Tag>
       ),
       filters: [
-        { text: 'Available', value: 'AVAILABLE' },
-        { text: 'Sold', value: 'SOLD' },
+        { text: 'Available', value: PetStatus.AVAILABLE },
+        { text: 'Sold', value: PetStatus.SOLD },
       ],
       onFilter: (value, record) => record.status === value,
     },
@@ -298,7 +303,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div style={{ padding: '4rem', textAlign: 'center' }}>
-        <Spin size="large" tip="Loading pets..." />
+        <Spin size="large" tip="Loading dashboard..." />
       </div>
     );
   }
@@ -311,68 +316,103 @@ export default function AdminDashboard() {
         minHeight: 'calc(100vh - 64px)',
       }}
     >
+      {/* Header */}
+      <div
+        style={{
+          marginBottom: '1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Title level={2} style={{ margin: 0 }}>
+          <DashboardOutlined /> Admin Dashboard
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          size="large"
+          onClick={openCreateModal}
+        >
+          Add New Pet
+        </Button>
+      </div>
+
+      {/* Business Stats Cards */}
+      <Row gutter={16} style={{ marginBottom: '1.5rem' }}>
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Total Inventory"
+              value={totalInventory}
+              prefix={<ShoppingCartOutlined />}
+              valueStyle={{ color: '#1890ff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Sales Performance"
+              value={salesPerformance}
+              suffix="pets sold"
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Total Revenue"
+              value={totalRevenue}
+              precision={2}
+              prefix="$"
+              valueStyle={{ color: '#cf1322' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Tag Filter */}
+      <Card
+        type="inner"
+        title={
+          <Space>
+            <FilterOutlined />
+            <span>Filter by Tag</span>
+          </Space>
+        }
+        style={{ marginBottom: '1rem' }}
+        extra={
+          selectedTagFilter !== undefined && (
+            <Button
+              size="small"
+              icon={<ClearOutlined />}
+              onClick={clearTagFilter}
+            >
+              Clear Filter
+            </Button>
+          )
+        }
+      >
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Select a tag to filter pets"
+          allowClear
+          value={selectedTagFilter}
+          onChange={handleTagFilterChange}
+          size="large"
+        >
+          {tags.map((tag) => (
+            <Option key={tag.id} value={tag.id}>
+              {tag.name}
+            </Option>
+          ))}
+        </Select>
+      </Card>
+
+      {/* Pets Table */}
       <Card>
-        {/* Header */}
-        <div
-          style={{
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Title level={2} style={{ margin: 0 }}>
-            <DashboardOutlined /> Admin Dashboard
-          </Title>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={openCreateModal}
-          >
-            Add New Pet
-          </Button>
-        </div>
-
-        {/* Tag Filter */}
-        <Card
-          type="inner"
-          title={
-            <Space>
-              <FilterOutlined />
-              <span>Filter by Tag</span>
-            </Space>
-          }
-          style={{ marginBottom: '1rem' }}
-          extra={
-            selectedTagFilter !== undefined && (
-              <Button
-                size="small"
-                icon={<ClearOutlined />}
-                onClick={clearTagFilter}
-              >
-                Clear Filter
-              </Button>
-            )
-          }
-        >
-          <Select
-            style={{ width: '100%' }}
-            placeholder="Select a tag to filter pets"
-            allowClear
-            value={selectedTagFilter}
-            onChange={handleTagFilterChange}
-            size="large"
-          >
-            {tags.map((tag) => (
-              <Option key={tag.id} value={tag.id}>
-                {tag.name}
-              </Option>
-            ))}
-          </Select>
-        </Card>
-
-        {/* Pets Table */}
         <Table
           columns={columns}
           dataSource={filteredPets}
@@ -439,9 +479,12 @@ export default function AdminDashboard() {
               <Form.Item
                 label="Price ($)"
                 name="price"
-                rules={[{ required: true, message: 'Please input price!' }]}
+                rules={[
+                  { required: true, message: 'Please input price!' },
+                  { type: 'number', min: 0.01, message: 'Price must be positive!' },
+                ]}
               >
-                <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+                <InputNumber min={0} step={0.01} precision={2} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -452,6 +495,17 @@ export default function AdminDashboard() {
             rules={[{ required: true, message: 'Please input image URL!' }]}
           >
             <Input placeholder="https://example.com/pet-image.jpg" />
+          </Form.Item>
+
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: 'Please input description!' }]}
+          >
+            <TextArea
+              rows={3}
+              placeholder="Describe the pet's personality, breed, etc."
+            />
           </Form.Item>
 
           <Form.Item
@@ -475,11 +529,15 @@ export default function AdminDashboard() {
           </Form.Item>
 
           <Form.Item
-            label="Available"
-            name="is_available"
-            valuePropName="checked"
+            label="Status"
+            name="status"
+            rules={[{ required: true, message: 'Please select status!' }]}
+            initialValue={PetStatus.AVAILABLE}
           >
-            <Switch checkedChildren="Available" unCheckedChildren="Sold Out" />
+            <Select>
+              <Option value={PetStatus.AVAILABLE}>Available</Option>
+              <Option value={PetStatus.SOLD}>Sold</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item>

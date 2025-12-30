@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Layout,
@@ -9,6 +8,8 @@ import {
   Dropdown,
   Space,
   Typography,
+  Switch,
+  Tooltip,
 } from 'antd';
 import {
   ShoppingCartOutlined,
@@ -17,9 +18,14 @@ import {
   LogoutOutlined,
   HomeOutlined,
   SettingOutlined,
+  BulbOutlined,
+  BulbFilled,
 } from '@ant-design/icons';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useTheme, catppuccin } from '../context/ThemeContext';
 import type { MenuProps } from 'antd';
+import { UserRole } from '../types';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -27,19 +33,11 @@ const { Text } = Typography;
 const Navbar = () => {
   const navigate = useNavigate();
   const { cart } = useCart();
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  const { user, logout } = useAuth();
+  const { mode, toggleTheme, isDark } = useTheme();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     navigate('/login');
   };
 
@@ -73,7 +71,6 @@ const Navbar = () => {
   ];
 
   // Only add Cart and Admin menu items when user is logged in
-  // Dashboard is REMOVED - users go to Profile instead
   if (user) {
     menuItems.push({
       key: 'cart',
@@ -87,7 +84,7 @@ const Navbar = () => {
     });
 
     // ONLY add Admin Dashboard if user is admin
-    if (user.role === 'admin') {
+    if (user.role === UserRole.ADMIN) {
       menuItems.push({
         key: 'admin',
         icon: <SettingOutlined />,
@@ -96,6 +93,12 @@ const Navbar = () => {
       });
     }
   }
+
+  // Catppuccin colors
+  const bgColor = isDark ? catppuccin.mantle : '#ffffff';
+  const borderColor = isDark ? catppuccin.surface0 : '#e8e8e8';
+  const logoColor = isDark ? catppuccin.green : '#52c41a';
+  const switchColor = isDark ? catppuccin.green : '#8c8c8c';
 
   return (
     <Header
@@ -108,8 +111,9 @@ const Navbar = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 2rem',
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        backgroundColor: bgColor,
+        boxShadow: isDark ? `0 2px 8px rgba(0, 0, 0, 0.3)` : '0 2px 8px rgba(0,0,0,0.06)',
+        borderBottom: isDark ? `1px solid ${borderColor}` : 'none',
       }}
     >
       {/* Logo */}
@@ -127,7 +131,7 @@ const Navbar = () => {
             strong
             style={{
               fontSize: '1.25rem',
-              color: '#52c41a',
+              color: logoColor,
               margin: 0,
             }}
           >
@@ -149,14 +153,26 @@ const Navbar = () => {
         }}
       />
 
-      {/* User Actions */}
-      <div style={{ marginLeft: '1rem' }}>
+      {/* Theme Toggle & User Actions */}
+      <Space size="middle" style={{ marginLeft: '1rem' }}>
+        <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          <Switch
+            checked={isDark}
+            onChange={toggleTheme}
+            checkedChildren={<BulbFilled />}
+            unCheckedChildren={<BulbOutlined />}
+            style={{
+              backgroundColor: switchColor,
+            }}
+          />
+        </Tooltip>
+
         {user ? (
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Avatar
               icon={<UserOutlined />}
               style={{
-                backgroundColor: '#52c41a',
+                backgroundColor: logoColor,
                 cursor: 'pointer',
               }}
               size="large"
@@ -174,13 +190,13 @@ const Navbar = () => {
             <Button
               type="primary"
               onClick={() => navigate('/register')}
-              style={{ backgroundColor: '#52c41a' }}
+              style={{ backgroundColor: logoColor }}
             >
               Register
             </Button>
           </Space>
         )}
-      </div>
+      </Space>
     </Header>
   );
 };

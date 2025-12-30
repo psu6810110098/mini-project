@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { 
-  List, 
-  Card, 
-  Button, 
-  Typography, 
-  Image, 
-  Statistic, 
-  Row, 
-  Col, 
-  Empty, 
-  message, 
-  Modal 
+import {
+  List,
+  Card,
+  Button,
+  Typography,
+  Image,
+  Statistic,
+  Row,
+  Col,
+  Empty,
+  message,
+  Modal,
 } from 'antd';
 import { DeleteOutlined, ShoppingOutlined, HomeOutlined } from '@ant-design/icons';
 import { useCart } from '../context/CartContext';
+import { useTheme, catppuccin } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios'; // Use your existing api instance
 
@@ -22,7 +23,14 @@ const { Title, Text } = Typography;
 export default function Cart() {
   const { cart, removeFromCart, cartTotal, clearCart } = useCart();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [loading, setLoading] = useState(false);
+
+  // Catppuccin colors
+  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
+  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
+  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+  const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
@@ -70,7 +78,7 @@ export default function Cart() {
 
   if (cart.length === 0) {
     return (
-      <div style={{ padding: '4rem', textAlign: 'center' }}>
+      <div style={{ padding: '4rem', textAlign: 'center', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
         <Empty
           description="Your cart is empty"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -84,7 +92,7 @@ export default function Cart() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
       <Title level={2}><ShoppingOutlined /> Your Cart</Title>
       
       <Row gutter={24}>
@@ -123,13 +131,29 @@ export default function Cart() {
                 </div>
               </List.Item>
             )}
-            style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+            style={{
+              backgroundColor: cardBg,
+              padding: '1.5rem',
+              borderRadius: '12px',
+              boxShadow: `0 2px 8px ${shadowColor}`,
+              border: isDark ? `1px solid ${borderColor}` : 'none',
+            }}
           />
         </Col>
 
         {/* Checkout Summary Sidebar */}
         <Col xs={24} lg={8}>
-          <Card title="Order Summary" style={{ position: 'sticky', top: '2rem' }}>
+          <Card
+            title="Order Summary"
+            style={{
+              position: 'sticky',
+              top: '2rem',
+              backgroundColor: cardBg,
+              borderRadius: '12px',
+              boxShadow: `0 2px 8px ${shadowColor}`,
+              border: isDark ? `1px solid ${borderColor}` : 'none',
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <Text>Items ({cart.length})</Text>
               <Text strong>${cartTotal.toFixed(2)}</Text>

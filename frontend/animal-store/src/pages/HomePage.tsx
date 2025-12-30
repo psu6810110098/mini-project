@@ -22,6 +22,8 @@ import {
 import api from '../api/axios';
 import type { Pet } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useTheme, catppuccin } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
@@ -32,7 +34,16 @@ export default function HomePage() {
   const [error, setError] = useState('');
 
   const { addToCart, isInCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
+
+  // Catppuccin colors
+  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
+  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
+  const cardHoverBg = isDark ? catppuccin.surface1 : '#fafafa';
+  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+  const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   useEffect(() => {
     fetchPets();
@@ -55,8 +66,7 @@ export default function HomePage() {
     e.stopPropagation();
 
     // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       Modal.warning({
         title: 'Login Required',
         content: 'Please login to adopt a pet',
@@ -88,10 +98,18 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
+    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
 
       {/* Header Section */}
-      <Card style={{ marginBottom: '2rem' }}>
+      <Card
+        style={{
+          marginBottom: '2rem',
+          backgroundColor: cardBg,
+          borderRadius: '12px',
+          boxShadow: `0 2px 8px ${shadowColor}`,
+          border: isDark ? `1px solid ${borderColor}` : 'none',
+        }}
+      >
         <Row justify="space-between" align="middle" gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <Space direction="vertical" size="small">
@@ -106,11 +124,11 @@ export default function HomePage() {
 
       {/* Pets Grid */}
       {pets.length === 0 ? (
-        <Card>
+        <Card style={{ backgroundColor: cardBg, borderRadius: '12px', border: isDark ? `1px solid ${borderColor}` : 'none' }}>
           <Empty description="No pets available at the moment" image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </Card>
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[24, 24]}>
           {pets.map((pet) => {
             const isAvailable = pet.status === 'AVAILABLE';
             const inCart = isInCart(Number(pet.id));
@@ -120,6 +138,13 @@ export default function HomePage() {
                 <Card
                   hoverable
                   onClick={() => navigate(`/pet/${pet.id}`)}
+                  style={{
+                    backgroundColor: cardBg,
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    boxShadow: `0 2px 8px ${shadowColor}`,
+                    border: isDark ? `1px solid ${borderColor}` : 'none',
+                  }}
                   cover={
                     <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
                       <Image
@@ -129,7 +154,7 @@ export default function HomePage() {
                         width="100%"
                         style={{ objectFit: 'cover' }}
                         preview={false}
-                        fallback="https://via.placeholder.com/200"
+                        fallback="https://images.unsplash.com/vector-1739806775546-65ab0a4f27ca?q=80&w=1480&auto=format&fit=crop"
                       />
                       {!isAvailable && (
                         <Tag color="volcano" style={{ position: 'absolute', top: 8, right: 8 }}>
@@ -165,10 +190,10 @@ export default function HomePage() {
                           <Text type="secondary"><CalendarOutlined /> {pet.age} years</Text>
                           <Text type="success" strong><DollarOutlined /> {Number(pet.price).toFixed(2)}</Text>
                         </Space>
-                        {pet.tags && pet.tags.length > 0 && (
+                        {pet.tag && pet.tag.length > 0 && (
                           <div style={{ marginTop: '8px' }}>
                             <Space wrap size="small">
-                              {pet.tags.map((tag) => (
+                              {pet.tag.map((tag) => (
                                 <Tag key={tag.id} color="purple" style={{ fontSize: '0.8rem' }}>
                                   {tag.name}
                                 </Tag>

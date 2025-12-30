@@ -14,6 +14,11 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper function to get token from either localStorage or sessionStorage
+const getToken = (): string | null => {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<Pet[]>(() => {
     const savedCart = localStorage.getItem('petCart');
@@ -25,8 +30,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cart]);
 
   const addToCart = (pet: Pet) => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
+    // Check if user is logged in (check both storage locations)
+    const token = getToken();
     if (!token) {
       message.warning('Please login to add pets to cart');
       return;

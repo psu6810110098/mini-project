@@ -10,7 +10,6 @@ import {
   Tag,
   Spin,
   Space,
-  Modal,
   message,
   Descriptions,
 } from 'antd';
@@ -24,6 +23,8 @@ import {
 import api from '../api/axios';
 import type { Pet } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useTheme, catppuccin } from '../context/ThemeContext';
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,14 @@ export default function PetDetail() {
   const [loading, setLoading] = useState(true);
 
   const { addToCart, isInCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const { isDark } = useTheme();
+
+  // Catppuccin colors
+  const bgColor = isDark ? catppuccin.base : '#f0f2f5';
+  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
+  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+  const borderColor = isDark ? catppuccin.surface1 : undefined;
 
   useEffect(() => {
     if (id) {
@@ -58,8 +67,7 @@ export default function PetDetail() {
     if (!pet) return;
 
     // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       message.warning('Please login to adopt a pet');
       navigate('/login');
       return;
@@ -92,7 +100,7 @@ export default function PetDetail() {
   const inCart = isInCart(Number(pet.id));
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: bgColor, minHeight: 'calc(100vh - 64px)' }}>
       <Button
         icon={<LeftOutlined />}
         onClick={() => navigate(-1)}
@@ -101,7 +109,14 @@ export default function PetDetail() {
         Back
       </Button>
 
-      <Card>
+      <Card
+        style={{
+          backgroundColor: cardBg,
+          borderRadius: '12px',
+          boxShadow: `0 2px 8px ${shadowColor}`,
+          border: isDark ? `1px solid ${borderColor}` : 'none',
+        }}
+      >
         <Row gutter={[32, 32]}>
           {/* Left Column - Pet Image */}
           <Col xs={24} md={12}>
@@ -112,7 +127,7 @@ export default function PetDetail() {
                 width="100%"
                 style={{ objectFit: 'cover' }}
                 preview
-                fallback="https://via.placeholder.com/400"
+                fallback="https://images.unsplash.com/vector-1739806775546-65ab0a4f27ca?q=80&w=1480&auto=format&fit=crop"
               />
             </div>
           </Col>
@@ -136,10 +151,10 @@ export default function PetDetail() {
               </div>
 
               {/* Tags Section */}
-              {pet.tags && pet.tags.length > 0 && (
+              {pet.tag && pet.tag.length > 0 && (
                 <Card type="inner" title={<Space><TagOutlined /> Tags</Space>}>
                   <Space size="small" wrap>
-                    {pet.tags.map((tag) => (
+                    {pet.tag.map((tag) => (
                       <Tag key={tag.id} color="purple" style={{ fontSize: '0.9rem', padding: '4px 12px' }}>
                         {tag.name}
                       </Tag>

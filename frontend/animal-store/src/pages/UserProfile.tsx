@@ -14,6 +14,7 @@ import {
   Empty,
   Divider,
   List,
+  Avatar,
 } from 'antd';
 import {
   UserOutlined,
@@ -22,14 +23,19 @@ import {
   DollarOutlined,
   LogoutOutlined,
   HomeOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { UserWithAdoptions, Adoption } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { useTheme, catppuccin } from '../context/ThemeContext';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 export default function UserProfile() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { isDark } = useTheme();
   const [user, setUser] = useState<UserWithAdoptions | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +46,6 @@ export default function UserProfile() {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      // Get current user from localStorage
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
       if (!storedUser.id) {
         message.error('User not found. Please login again.');
@@ -56,12 +61,6 @@ export default function UserProfile() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
   };
 
   if (loading) {
@@ -83,183 +82,244 @@ export default function UserProfile() {
     );
   }
 
+  // Catppuccin colors
+  const bgColor = isDark ? catppuccin.base : '#f5f5f5';
+  const cardBg = isDark ? catppuccin.surface0 : '#ffffff';
+  const textColor = isDark ? catppuccin.text : '#000000';
+  const textSecondary = isDark ? catppuccin.subtext0 : '#8c8c8c';
+  const borderColor = isDark ? catppuccin.surface1 : '#d9d9d9';
+  const accentColor = isDark ? catppuccin.green : '#52c41a';
+  const cardHoverBg = isDark ? catppuccin.surface1 : '#fafafa';
+  const shadowColor = isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
-        <Row gutter={[16, 16]}>
-          {/* Left Column - User Info Card */}
-          <Col xs={24} lg={8}>
-            <Card>
-              <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                {/* Avatar Section */}
-                <div style={{ textAlign: 'center' }}>
-                  <div
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '50%',
-                      backgroundColor: '#1890ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 1rem',
-                    }}
-                  >
-                    <UserOutlined style={{ fontSize: '3rem', color: 'white' }} />
-                  </div>
-                  <Title level={3} style={{ margin: 0 }}>
+    <div
+      style={{
+        padding: '2rem',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        backgroundColor: bgColor,
+        minHeight: 'calc(100vh - 64px)',
+      }}
+    >
+      {/* Page Header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Title level={2} style={{ margin: 0, color: textColor }}>
+          <IdcardOutlined style={{ color: accentColor }} /> My Profile
+        </Title>
+        <Text type="secondary">Manage your account and view adoption history</Text>
+      </div>
+
+      <Row gutter={[24, 24]}>
+        {/* Left Column - User Info Card */}
+        <Col xs={24} lg={8} xl={6}>
+          <Card
+            style={{
+              backgroundColor: cardBg,
+              borderRadius: '12px',
+              boxShadow: `0 2px 8px ${shadowColor}`,
+              border: isDark ? `1px solid ${borderColor}` : 'none',
+            }}
+          >
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              {/* Avatar Section */}
+              <div style={{ textAlign: 'center' }}>
+                <Avatar
+                  size={100}
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor: accentColor,
+                    marginBottom: '1rem',
+                  }}
+                />
+                <div>
+                  <Title level={4} style={{ margin: '0 0 0.5rem 0', color: textColor }}>
                     {user.full_name || 'User'}
                   </Title>
-                  <Tag color="blue" style={{ marginTop: '0.5rem' }}>
+                  <Tag color="blue" style={{ marginBottom: '0.5rem' }}>
                     {user.role}
                   </Tag>
                 </div>
+              </div>
 
-                <Divider />
+              <Divider style={{ margin: '1rem 0', borderColor }} />
 
-                {/* User Details */}
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                  <div>
-                    <Text type="secondary">Email</Text>
-                    <br />
-                    <Text strong>
-                      <MailOutlined /> {user.email}
+              {/* User Details */}
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '0.9rem' }}>
+                    Email
+                  </Text>
+                  <div style={{ marginTop: '4px' }}>
+                    <Text style={{ color: textColor, fontSize: '1rem' }}>
+                      <MailOutlined style={{ marginRight: '8px', color: accentColor }} />
+                      {user.email}
                     </Text>
                   </div>
-                  <div>
-                    <Text type="secondary">User ID</Text>
-                    <br />
-                    <Text strong>#{user.id}</Text>
+                </div>
+
+                <div>
+                  <Text type="secondary" style={{ fontSize: '0.9rem' }}>
+                    User ID
+                  </Text>
+                  <div style={{ marginTop: '4px' }}>
+                    <Text style={{ color: textColor, fontSize: '1rem' }}>
+                      #{user.id}
+                    </Text>
                   </div>
-                </Space>
+                </div>
 
-                <Divider />
-
-                {/* Action Buttons */}
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Button
-                    type="default"
-                    icon={<HomeOutlined />}
-                    onClick={() => navigate('/')}
-                    block
-                  >
-                    Back to Home
-                  </Button>
-                  <Button
-                    danger
-                    icon={<LogoutOutlined />}
-                    onClick={handleLogout}
-                    block
-                  >
-                    Logout
-                  </Button>
-                </Space>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '0.9rem' }}>
+                    Total Adoptions
+                  </Text>
+                  <div style={{ marginTop: '4px' }}>
+                    <Text style={{ color: textColor, fontSize: '1.1rem', fontWeight: 'bold' }}>
+                      {user.adoptions?.length || 0} pets
+                    </Text>
+                  </div>
+                </div>
               </Space>
-            </Card>
-          </Col>
 
-          {/* Right Column - Adoption History */}
-          <Col xs={24} lg={16}>
-            <Card
-              title={
-                <Space>
-                  <CalendarOutlined />
-                  <span>Adoption History</span>
-                </Space>
-              }
-            >
-              {!user.adoptions || user.adoptions.length === 0 ? (
-                <Empty
-                  description="No pets adopted yet"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+              <Divider style={{ margin: '1rem 0', borderColor }} />
+
+              {/* Action Buttons */}
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <Button
+                  type="default"
+                  icon={<HomeOutlined />}
+                  onClick={() => navigate('/')}
+                  block
+                  size="large"
                 >
-                  <Button type="primary" onClick={() => navigate('/')}>
-                    Browse Pets
-                  </Button>
-                </Empty>
-              ) : (
-                <List
-                  grid={{
-                    gutter: 16,
-                    xs: 1,
-                    sm: 1,
-                    md: 2,
-                    lg: 2,
-                    xl: 2,
-                    xxl: 2,
+                  Back to Home
+                </Button>
+                <Button
+                  danger
+                  icon={<LogoutOutlined />}
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
                   }}
-                  dataSource={user.adoptions}
-                  renderItem={(adoption: Adoption) => (
-                    <List.Item>
-                      <Card
-                        hoverable
-                        cover={
-                          <div
-                            style={{
-                              height: '180px',
-                              overflow: 'hidden',
-                              position: 'relative',
-                            }}
+                  block
+                  size="large"
+                >
+                  Logout
+                </Button>
+              </Space>
+            </Space>
+          </Card>
+        </Col>
+
+        {/* Right Column - Adoption History */}
+        <Col xs={24} lg={16} xl={18}>
+          <Card
+            title={
+              <Space size="large">
+                <CalendarOutlined style={{ color: accentColor, fontSize: '1.2rem' }} />
+                <span style={{ color: textColor, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                  Adoption History
+                </span>
+              </Space>
+            }
+            style={{
+              backgroundColor: cardBg,
+              borderRadius: '12px',
+              boxShadow: `0 2px 8px ${shadowColor}`,
+              border: isDark ? `1px solid ${borderColor}` : 'none',
+            }}
+          >
+            {!user.adoptions || user.adoptions.length === 0 ? (
+              <Empty
+                description="No pets adopted yet"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              >
+                <Button type="primary" onClick={() => navigate('/')} icon={<HomeOutlined />}>
+                  Browse Pets
+                </Button>
+              </Empty>
+            ) : (
+              <List
+                grid={{
+                  gutter: [24, 24],
+                  xs: 1,
+                  sm: 1,
+                  md: 2,
+                  lg: 2,
+                  xl: 2,
+                  xxl: 3,
+                }}
+                dataSource={user.adoptions}
+                renderItem={(adoption: Adoption) => (
+                  <List.Item>
+                    <Card
+                      hoverable
+                      style={{
+                        backgroundColor: cardHoverBg,
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                      }}
+                      cover={
+                        <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
+                          <Image
+                            src={adoption.pet.image_url}
+                            alt={adoption.pet.name}
+                            height={200}
+                            width="100%"
+                            style={{ objectFit: 'cover' }}
+                            preview={false}
+                            fallback="https://images.unsplash.com/vector-1739806775546-65ab0a4f27ca?q=80&w=1480&auto=format&fit=crop"
+                          />
+                          <Tag
+                            color="green"
+                            style={{ position: 'absolute', top: 12, right: 12, fontSize: '0.85rem', padding: '4px 12px' }}
                           >
-                            <Image
-                              src={adoption.pet.image_url}
-                              alt={adoption.pet.name}
-                              height={180}
-                              width="100%"
-                              style={{ objectFit: 'cover' }}
-                              preview={false}
-                              fallback="https://via.placeholder.com/180"
-                            />
-                            <Tag
-                              color="green"
-                              style={{ position: 'absolute', top: 8, right: 8 }}
-                            >
-                              Adopted
-                            </Tag>
-                          </div>
-                        }
-                      >
-                        <Card.Meta
-                          title={
-                            <Text strong style={{ fontSize: '1.1rem' }}>
-                              {adoption.pet.name}
+                            Adopted
+                          </Tag>
+                        </div>
+                      }
+                    >
+                      <div style={{ padding: '4px 0' }}>
+                        <Title level={5} style={{ margin: '0 0 8px 0', color: textColor }}>
+                          {adoption.pet.name}
+                        </Title>
+                        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                          <Tag color="blue" style={{ margin: 0, width: 'fit-content' }}>
+                            {adoption.pet.species}
+                          </Tag>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text type="secondary" style={{ fontSize: '0.9rem' }}>
+                              <CalendarOutlined /> {adoption.pet.age} years
                             </Text>
-                          }
-                          description={
-                            <Space
-                              direction="vertical"
-                              size="small"
-                              style={{ width: '100%' }}
+                            <Text
+                              strong
+                              style={{
+                                color: accentColor,
+                                fontSize: '1.1rem',
+                              }}
                             >
-                              <Tag color="blue">{adoption.pet.species}</Tag>
-                              <Text type="secondary">
-                                <CalendarOutlined /> {adoption.pet.age} years
-                              </Text>
-                              <Text type="success" strong>
-                                <DollarOutlined />{' '}
-                                {Number(adoption.pet.price).toFixed(2)}
-                              </Text>
-                              <Divider style={{ margin: '8px 0' }} />
-                              <Text type="secondary" style={{ fontSize: '0.85rem' }}>
-                                Adopted on:{' '}
-                                {new Date(
-                                  adoption.adoptionDate
-                                ).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
-                              </Text>
-                            </Space>
-                          }
-                        />
-                      </Card>
-                    </List.Item>
-                  )}
-                />
-              )}
-            </Card>
-          </Col>
-        </Row>
-      </div>
+                              <DollarOutlined /> ${Number(adoption.pet.price).toFixed(2)}
+                            </Text>
+                          </div>
+                          <Divider style={{ margin: '12px 0', borderColor }} />
+                          <Text type="secondary" style={{ fontSize: '0.85rem', display: 'block' }}>
+                            Adopted on:{' '}
+                            {new Date(adoption.adoptionDate).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </Text>
+                        </Space>
+                      </div>
+                    </Card>
+                  </List.Item>
+                )}
+              />
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 }
