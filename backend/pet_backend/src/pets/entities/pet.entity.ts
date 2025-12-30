@@ -36,5 +36,5 @@ export class Pet {
 
   @ManyToMany(() => Tag, { cascade: true })
   @JoinTable()
-  tags: Tag[];
+  tag: Tag[];
 }

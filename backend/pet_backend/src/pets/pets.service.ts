@@ -36,7 +36,7 @@ export class PetsService {
         );
       }
 
-      pet.tags = tags; // NestJS handles the join table automatically
+      pet.tag= tags; // NestJS handles the join table automatically
     }
 
     return this.petRepository.save(pet);
@@ -44,15 +44,15 @@ export class PetsService {
 
   // --- FIND ALL ---
   findAll() {
-    // relations: ['tags'] ensures we get the tags in the response
-    return this.petRepository.find({ relations: ['tags'] });
+    // relations: ['tag'] ensures we get the tags in the response
+    return this.petRepository.find({ relations: ['tag'] });
   }
 
   // --- FIND ONE ---
   async findOne(id: number) {
     const pet = await this.petRepository.findOne({
       where: { id },
-      relations: ['tags'],
+      relations: ['tag'],
     });
     if (!pet) throw new NotFoundException(`Pet #${id} not found`);
     return pet;
@@ -81,7 +81,7 @@ export class PetsService {
         );
       }
 
-      pet.tags = tags;
+      pet.tag = tags;
     }
 
     return this.petRepository.save(pet);

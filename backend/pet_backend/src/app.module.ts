@@ -28,10 +28,8 @@ import { AdoptionsModule } from './adoptions/adoptions.module';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        
-        // 2. ✅ เพิ่ม Adoption เข้าไปใน Array นี้ (สำคัญมาก!)
-        entities: [User, Pet, Tag, Adoption], 
-        
+      
+        autoLoadEntities: true, 
         synchronize: true,
       }),
     }),
