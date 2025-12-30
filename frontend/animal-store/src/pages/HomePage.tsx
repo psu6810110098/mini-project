@@ -67,7 +67,7 @@ export default function HomePage() {
       <>
         <Navbar />
         <div style={{ padding: '4rem', textAlign: 'center' }}>
-          <Spin size="large" tip="Loading pets..." />
+          <Spin size="large" />
         </div>
       </>
     );
@@ -194,7 +194,7 @@ export default function HomePage() {
                             <CalendarOutlined /> {pet.age} years
                           </Text>
                           <Text type="danger" strong>
-                            <DollarOutlined /> ${pet.price.toFixed(2)}
+                            <DollarOutlined /> ${Number(pet.price).toFixed(2)}
                           </Text>
                         </Space>
                         <Paragraph
