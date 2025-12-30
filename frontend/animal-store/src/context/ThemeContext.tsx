@@ -57,11 +57,27 @@ export { catppuccin };
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const savedMode = localStorage.getItem('theme') as ThemeMode | null;
-    return savedMode || 'dark'; // Default to dark mode for Catppuccin
+    const initialMode = savedMode || 'dark'; // Default to dark mode for Catppuccin
+
+    // Set initial body class to prevent flash
+    if (initialMode === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+
+    return initialMode;
   });
 
   useEffect(() => {
     localStorage.setItem('theme', mode);
+
+    // Add/remove dark-mode class on body for CSS styling
+    if (mode === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
 
     // Apply theme to document
     if (mode === 'dark') {
