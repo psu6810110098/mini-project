@@ -17,12 +17,13 @@ import {
 import {
   DollarOutlined,
   CalendarOutlined,
-  HomeOutlined,
+  ShoppingCartOutlined,
   LeftOutlined,
   TagOutlined,
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { Pet } from '../types';
+import { useCart } from '../context/CartContext';
 
 const { Title, Text } = Typography;
 
@@ -31,7 +32,8 @@ export default function PetDetail() {
   const navigate = useNavigate();
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
-  const [adopting, setAdopting] = useState(false);
+
+  const { addToCart, isInCart } = useCart();
 
   useEffect(() => {
     if (id) {
@@ -52,7 +54,7 @@ export default function PetDetail() {
     }
   };
 
-  const handleAdopt = async () => {
+  const handleAdoptMe = () => {
     if (!pet) return;
 
     // Check if user is logged in
@@ -63,29 +65,8 @@ export default function PetDetail() {
       return;
     }
 
-    setAdopting(true);
-    try {
-      await api.post('/adoptions', { petId: Number(pet.id) });
-      Modal.success({
-        title: 'Adoption Successful!',
-        content: `Thank you! You have adopted ${pet.name}.`,
-        onOk: () => {
-          // Navigate to profile to see the adopted pet
-          navigate('/profile');
-        },
-      });
-    } catch (err: any) {
-      if (err.response?.status === 409) {
-        message.error('Sorry, this pet is already adopted!');
-        // Refresh pet data to show updated status
-        if (id) fetchPetDetail(id);
-      } else {
-        const errorMsg = err.response?.data?.message || 'Failed to adopt pet';
-        message.error(errorMsg);
-      }
-    } finally {
-      setAdopting(false);
-    }
+    // Add to cart
+    addToCart(pet);
   };
 
   if (loading) {
@@ -108,6 +89,7 @@ export default function PetDetail() {
   }
 
   const isAvailable = pet.status === 'AVAILABLE';
+  const inCart = isInCart(Number(pet.id));
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
@@ -190,21 +172,37 @@ export default function PetDetail() {
 
               {/* Action Button */}
               <Button
-                type={isAvailable ? 'primary' : 'default'}
+                type={isAvailable && !inCart ? 'primary' : 'default'}
                 size="large"
                 block
-                icon={<HomeOutlined />}
-                onClick={handleAdopt}
+                icon={inCart ? <TagOutlined /> : <ShoppingCartOutlined />}
+                onClick={handleAdoptMe}
                 disabled={!isAvailable}
-                loading={adopting}
-                style={{
-                  height: '50px',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                }}
+                style={
+                  isAvailable && !inCart
+                    ? {
+                        height: '50px',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        backgroundColor: '#52c41a',
+                      }
+                    : { height: '50px', fontSize: '1.1rem', fontWeight: 'bold' }
+                }
               >
-                {isAvailable ? 'Adopt Me' : 'Already Adopted'}
+                {!isAvailable ? 'Already Adopted' : inCart ? 'In Cart - Go to Checkout' : 'Adopt Me'}
               </Button>
+
+              {inCart && (
+                <Button
+                  type="default"
+                  size="large"
+                  block
+                  onClick={() => navigate('/cart')}
+                  style={{ height: '50px', fontSize: '1.1rem' }}
+                >
+                  Go to Cart
+                </Button>
+              )}
             </Space>
           </Col>
         </Row>

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 interface CartContextType {
   cart: Pet[];
   addToCart: (pet: Pet) => void;
-  removeFromCart: (petId: number) => void;
+  removeFromCart: (petId: string | number) => void;
   clearCart: () => void;
   isInCart: (petId: number) => boolean;
   cartTotal: number;
@@ -33,7 +33,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     setCart((prev) => {
-      if (prev.find((p) => p.id === pet.id)) {
+      if (prev.find((p) => String(p.id) === String(pet.id))) {
         message.warning(`${pet.name} is already in your cart`);
         return prev;
       }
@@ -42,9 +42,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const removeFromCart = (petId: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== String(petId)));
-    message.success('Item removed from cart');
+  const removeFromCart = (petId: string | number) => {
+    setCart((prev) => {
+      const filtered = prev.filter((item) => String(item.id) !== String(petId));
+      if (filtered.length < prev.length) {
+        message.success('Item removed from cart');
+      }
+      return filtered;
+    });
   };
 
   const clearCart = () => {
@@ -53,7 +58,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const isInCart = (petId: number) => {
-    return cart.some((item) => item.id === String(petId));
+    return cart.some((item) => String(item.id) === String(petId));
   };
 
   const cartTotal = cart.reduce((total, item) => total + Number(item.price), 0);

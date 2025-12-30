@@ -15,7 +15,6 @@ import {
   UserOutlined,
   LoginOutlined,
   LogoutOutlined,
-  DashboardOutlined,
   HomeOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
@@ -73,7 +72,8 @@ const Navbar = () => {
     },
   ];
 
-  // Only add Cart, Dashboard, and Admin menu items when user is logged in
+  // Only add Cart and Admin menu items when user is logged in
+  // Dashboard is REMOVED - users go to Profile instead
   if (user) {
     menuItems.push({
       key: 'cart',
@@ -84,13 +84,6 @@ const Navbar = () => {
       ),
       label: 'Cart',
       onClick: () => navigate('/cart'),
-    });
-
-    menuItems.push({
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-      onClick: () => navigate('/dashboard'),
     });
 
     // ONLY add Admin Dashboard if user is admin

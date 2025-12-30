@@ -62,8 +62,8 @@ export default function Cart() {
     } else {
       Modal.success({
         title: 'Adoption Successful!',
-        content: 'Thank you for giving them a home. You can view your adoptions in the dashboard.',
-        onOk: () => navigate('/dashboard'),
+        content: 'Thank you for giving them a home. You can view your adoptions in your profile.',
+        onOk: () => navigate('/profile'),
       });
     }
   };
@@ -96,10 +96,10 @@ export default function Cart() {
             renderItem={(pet) => (
               <List.Item
                 actions={[
-                  <Button 
-                    danger 
-                    icon={<DeleteOutlined />} 
-                    onClick={() => removeFromCart(Number(pet.id))}
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeFromCart(pet.id)}
                   >
                     Remove
                   </Button>

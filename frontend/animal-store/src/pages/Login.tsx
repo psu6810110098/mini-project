@@ -98,7 +98,6 @@ export default function Login() {
               name="password"
               rules={[
                 { required: true, message: 'Please input your password!' },
-                { min: 6, message: 'Password must be at least 6 characters!' },
               ]}
             >
               <Input.Password
