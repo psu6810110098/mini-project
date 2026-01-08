@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Button,
@@ -19,7 +19,7 @@ import {
   Row,
   Col,
   Statistic,
-} from 'antd';
+} from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -29,12 +29,12 @@ import {
   FilterOutlined,
   ClearOutlined,
   ShoppingCartOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import api from '../api/axios';
-import type { Pet, CreatePetDto, Tag as TagType } from '../types';
-import { PetStatus, UserRole } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import api from "../api/axios";
+import type { Pet, CreatePetDto, Tag as TagType } from "../types";
+import { PetStatus, UserRole } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -50,23 +50,28 @@ export default function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
-  const [selectedTagFilter, setSelectedTagFilter] = useState<number | undefined>();
+  const [selectedTagFilter, setSelectedTagFilter] = useState<
+    number | undefined
+  >();
   const [form] = Form.useForm();
 
   // Business Stats
   const totalInventory = pets.length;
   const soldPets = pets.filter((p) => p.status === PetStatus.SOLD);
   const salesPerformance = soldPets.length;
-  const totalRevenue = soldPets.reduce((sum, pet) => sum + Number(pet.price), 0);
+  const totalRevenue = soldPets.reduce(
+    (sum, pet) => sum + Number(pet.price),
+    0
+  );
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
     if (user.role !== UserRole.ADMIN) {
-      message.error('Access Denied. Admin only.');
-      navigate('/');
+      message.error("Access Denied. Admin only.");
+      navigate("/");
       return;
     }
     fetchPets();
@@ -76,11 +81,11 @@ export default function AdminDashboard() {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/pets');
+      const response = await api.get("/pets");
       setPets(response.data);
       setFilteredPets(response.data);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch pets';
+      const errorMsg = err.response?.data?.message || "Failed to fetch pets";
       message.error(errorMsg);
     } finally {
       setLoading(false);
@@ -89,10 +94,10 @@ export default function AdminDashboard() {
 
   const fetchTags = async () => {
     try {
-      const response = await api.get('/tags');
+      const response = await api.get("/tags");
       setTags(response.data);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || 'Failed to fetch tags';
+      const errorMsg = err.response?.data?.message || "Failed to fetch tags";
       message.error(errorMsg);
     }
   };
@@ -100,13 +105,13 @@ export default function AdminDashboard() {
   const handleCreate = async (values: CreatePetDto) => {
     try {
       setSubmitting(true);
-      await api.post('/pets', values);
-      message.success('Pet created successfully!');
+      await api.post("/pets", values);
+      message.success("Pet created successfully!");
       setModalVisible(false);
       form.resetFields();
       fetchPets();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || 'Failed to create pet';
+      const errorMsg = err.response?.data?.message || "Failed to create pet";
       message.error(errorMsg);
     } finally {
       setSubmitting(false);
@@ -119,13 +124,13 @@ export default function AdminDashboard() {
     try {
       setSubmitting(true);
       await api.patch(`/pets/${editingPet.id}`, values);
-      message.success('Pet updated successfully!');
+      message.success("Pet updated successfully!");
       setModalVisible(false);
       setEditingPet(null);
       form.resetFields();
       fetchPets();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || 'Failed to update pet';
+      const errorMsg = err.response?.data?.message || "Failed to update pet";
       message.error(errorMsg);
     } finally {
       setSubmitting(false);
@@ -135,10 +140,10 @@ export default function AdminDashboard() {
   const handleDelete = async (id: number) => {
     try {
       await api.delete(`/pets/${id}`);
-      message.success('Pet deleted successfully!');
+      message.success("Pet deleted successfully!");
       fetchPets();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || 'Failed to delete pet';
+      const errorMsg = err.response?.data?.message || "Failed to delete pet";
       message.error(errorMsg);
     }
   };
@@ -151,7 +156,7 @@ export default function AdminDashboard() {
       age: pet.age,
       price: pet.price,
       image_url: pet.image_url,
-      description: '', // Backend doesn't return description in GET
+      description: "", // Backend doesn't return description in GET
       status: pet.status,
       tagIds: pet.tag?.map((tag) => tag.id) || [],
     });
@@ -184,9 +189,9 @@ export default function AdminDashboard() {
 
   const columns: ColumnsType<Pet> = [
     {
-      title: 'Image',
-      dataIndex: 'image_url',
-      key: 'image_url',
+      title: "Image",
+      dataIndex: "image_url",
+      key: "image_url",
       width: 100,
       render: (url: string) => (
         <Image
@@ -194,36 +199,38 @@ export default function AdminDashboard() {
           alt="pet"
           width={60}
           height={60}
-          style={{ objectFit: 'cover', borderRadius: '8px' }}
+          style={{ objectFit: "cover", borderRadius: "8px" }}
           fallback="https://images.unsplash.com/vector-1739806775546-65ab0a4f27ca?q=80&w=1480&auto=format&fit=crop"
         />
       ),
     },
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (text: string) => <span style={{ fontWeight: 'bold' }}>{text}</span>,
+      render: (text: string) => (
+        <span style={{ fontWeight: "bold" }}>{text}</span>
+      ),
     },
     {
-      title: 'Species',
-      dataIndex: 'species',
-      key: 'species',
+      title: "Species",
+      dataIndex: "species",
+      key: "species",
       render: (species: string) => <Tag color="orange">{species}</Tag>,
     },
     {
-      title: 'Age',
-      dataIndex: 'age',
-      key: 'age',
+      title: "Age",
+      dataIndex: "age",
+      key: "age",
       width: 100,
       sorter: (a, b) => a.age - b.age,
       render: (age: number) => `${age} yrs`,
     },
     {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'price',
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
       width: 120,
       render: (price: number) => (
         <Tag color="green" icon={<DollarOutlined />}>
@@ -233,9 +240,9 @@ export default function AdminDashboard() {
       sorter: (a, b) => a.price - b.price,
     },
     {
-      title: 'Tags',
-      dataIndex: 'tag',
-      key: 'tag',
+      title: "Tags",
+      dataIndex: "tag",
+      key: "tag",
       width: 200,
       render: (petTags: TagType[]) => (
         <Space size="small" wrap>
@@ -247,32 +254,31 @@ export default function AdminDashboard() {
             ))
           ) : (
             <Text type="secondary">No tags</Text>
-          )
-        }
+          )}
         </Space>
       ),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       width: 120,
       render: (status: PetStatus) => (
-        <Tag color={status === PetStatus.AVAILABLE ? 'success' : 'error'}>
-          {status === PetStatus.AVAILABLE ? 'Available' : 'Sold'}
+        <Tag color={status === PetStatus.AVAILABLE ? "success" : "error"}>
+          {status === PetStatus.AVAILABLE ? "Available" : "Sold"}
         </Tag>
       ),
       filters: [
-        { text: 'Available', value: PetStatus.AVAILABLE },
-        { text: 'Sold', value: PetStatus.SOLD },
+        { text: "Available", value: PetStatus.AVAILABLE },
+        { text: "Sold", value: PetStatus.SOLD },
       ],
       onFilter: (value, record) => record.status === value,
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       width: 200,
-      fixed: 'right',
+      fixed: "right",
       render: (_, record) => (
         <Space>
           <Button
@@ -302,7 +308,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{ padding: '4rem', textAlign: 'center' }}>
+      <div style={{ padding: "4rem", textAlign: "center" }}>
         <Spin size="large" tip="Loading dashboard..." />
       </div>
     );
@@ -311,18 +317,18 @@ export default function AdminDashboard() {
   return (
     <div
       style={{
-        padding: '2rem',
-        backgroundColor: '#f0f2f5',
-        minHeight: 'calc(100vh - 64px)',
+        padding: "2rem",
+        backgroundColor: "#f0f2f5",
+        minHeight: "calc(100vh - 64px)",
       }}
     >
       {/* Header */}
       <div
         style={{
-          marginBottom: '1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          marginBottom: "1.5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
         <Title level={2} style={{ margin: 0 }}>
@@ -339,14 +345,14 @@ export default function AdminDashboard() {
       </div>
 
       {/* Business Stats Cards */}
-      <Row gutter={16} style={{ marginBottom: '1.5rem' }}>
+      <Row gutter={16} style={{ marginBottom: "1.5rem" }}>
         <Col xs={24} sm={8}>
           <Card>
             <Statistic
               title="Total Inventory"
               value={totalInventory}
               prefix={<ShoppingCartOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: "#1890ff" }}
             />
           </Card>
         </Col>
@@ -356,7 +362,7 @@ export default function AdminDashboard() {
               title="Sales Performance"
               value={salesPerformance}
               suffix="pets sold"
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: "#52c41a" }}
             />
           </Card>
         </Col>
@@ -367,7 +373,7 @@ export default function AdminDashboard() {
               value={totalRevenue}
               precision={2}
               prefix="$"
-              valueStyle={{ color: '#cf1322' }}
+              valueStyle={{ color: "#cf1322" }}
             />
           </Card>
         </Col>
@@ -382,7 +388,7 @@ export default function AdminDashboard() {
             <span>Filter by Tag</span>
           </Space>
         }
-        style={{ marginBottom: '1rem' }}
+        style={{ marginBottom: "1rem" }}
         extra={
           selectedTagFilter !== undefined && (
             <Button
@@ -396,7 +402,7 @@ export default function AdminDashboard() {
         }
       >
         <Select
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
           placeholder="Select a tag to filter pets"
           allowClear
           value={selectedTagFilter}
@@ -431,7 +437,7 @@ export default function AdminDashboard() {
         title={
           <Space>
             {editingPet ? <EditOutlined /> : <PlusOutlined />}
-            <span>{editingPet ? 'Edit Pet' : 'Add New Pet'}</span>
+            <span>{editingPet ? "Edit Pet" : "Add New Pet"}</span>
           </Space>
         }
         open={modalVisible}
@@ -452,7 +458,7 @@ export default function AdminDashboard() {
           <Form.Item
             label="Pet Name"
             name="name"
-            rules={[{ required: true, message: 'Please input pet name!' }]}
+            rules={[{ required: true, message: "Please input pet name!" }]}
           >
             <Input placeholder="e.g., Max, Bella, Charlie" />
           </Form.Item>
@@ -460,7 +466,7 @@ export default function AdminDashboard() {
           <Form.Item
             label="Species"
             name="species"
-            rules={[{ required: true, message: 'Please input species!' }]}
+            rules={[{ required: true, message: "Please input species!" }]}
           >
             <Input placeholder="e.g., Dog, Cat, Bird" />
           </Form.Item>
@@ -470,9 +476,9 @@ export default function AdminDashboard() {
               <Form.Item
                 label="Age (years)"
                 name="age"
-                rules={[{ required: true, message: 'Please input age!' }]}
+                rules={[{ required: true, message: "Please input age!" }]}
               >
-                <InputNumber min={0} max={30} style={{ width: '100%' }} />
+                <InputNumber min={0} max={30} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -480,11 +486,20 @@ export default function AdminDashboard() {
                 label="Price ($)"
                 name="price"
                 rules={[
-                  { required: true, message: 'Please input price!' },
-                  { type: 'number', min: 0.01, message: 'Price must be positive!' },
+                  { required: !editingPet, message: "Please input price!" },
+                  {
+                    type: "number",
+                    min: 0.01,
+                    message: "Price must be positive!",
+                  },
                 ]}
               >
-                <InputNumber min={0} step={0.01} precision={2} style={{ width: '100%' }} />
+                <InputNumber
+                  min={0}
+                  step={0.01}
+                  precision={2}
+                  style={{ width: "100%" }}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -492,7 +507,7 @@ export default function AdminDashboard() {
           <Form.Item
             label="Image URL"
             name="image_url"
-            rules={[{ required: true, message: 'Please input image URL!' }]}
+            rules={[{ required: true, message: "Please input image URL!" }]}
           >
             <Input placeholder="https://example.com/pet-image.jpg" />
           </Form.Item>
@@ -500,7 +515,9 @@ export default function AdminDashboard() {
           <Form.Item
             label="Description"
             name="description"
-            rules={[{ required: true, message: 'Please input description!' }]}
+            rules={[
+              { required: !editingPet, message: "Please input description!" },
+            ]}
           >
             <TextArea
               rows={3}
@@ -531,7 +548,7 @@ export default function AdminDashboard() {
           <Form.Item
             label="Status"
             name="status"
-            rules={[{ required: true, message: 'Please select status!' }]}
+            rules={[{ required: true, message: "Please select status!" }]}
             initialValue={PetStatus.AVAILABLE}
           >
             <Select>
@@ -548,7 +565,7 @@ export default function AdminDashboard() {
                 loading={submitting}
                 icon={editingPet ? <EditOutlined /> : <PlusOutlined />}
               >
-                {editingPet ? 'Update Pet' : 'Create Pet'}
+                {editingPet ? "Update Pet" : "Create Pet"}
               </Button>
               <Button
                 onClick={() => {
