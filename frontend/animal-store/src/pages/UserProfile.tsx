@@ -15,6 +15,10 @@ import {
   Divider,
   List,
   Avatar,
+  Modal,
+  Form,
+  Input,
+  Select,
 } from 'antd';
 import {
   UserOutlined,
@@ -24,13 +28,16 @@ import {
   LogoutOutlined,
   HomeOutlined,
   IdcardOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import api from '../api/axios';
 import type { UserWithAdoptions, Adoption } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useTheme, catppuccin } from '../context/ThemeContext';
+import { UserGender } from '../types';
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -38,6 +45,9 @@ export default function UserProfile() {
   const { isDark } = useTheme();
   const [user, setUser] = useState<UserWithAdoptions | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchUserProfile();
@@ -60,6 +70,36 @@ export default function UserProfile() {
       message.error(errorMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEditModal = () => {
+    form.setFieldsValue({
+      full_name: user?.full_name,
+      gender: user?.gender,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleUpdateProfile = async (values: { full_name: string; gender: UserGender }) => {
+    try {
+      setSubmitting(true);
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const response = await api.patch(`/users/${storedUser.id}`, values);
+      
+      // Update local state
+      setUser(response.data);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(response.data));
+      
+      message.success('Profile updated successfully!');
+      setEditModalVisible(false);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || 'Failed to update profile';
+      message.error(errorMsg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -169,6 +209,15 @@ export default function UserProfile() {
 
               {/* Action Buttons */}
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={openEditModal}
+                  block
+                  size="large"
+                >
+                  Edit Profile
+                </Button>
                 <Button
                   type="default"
                   icon={<HomeOutlined />}
@@ -301,6 +350,73 @@ export default function UserProfile() {
           </Card>
         </Col>
       </Row>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        title={
+          <Space>
+            <EditOutlined />
+            <span>Edit Profile</span>
+          </Space>
+        }
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          form.resetFields();
+        }}
+        footer={null}
+        width={500}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateProfile}
+          size="large"
+        >
+          <Form.Item
+            label="Full Name"
+            name="full_name"
+            rules={[{ required: true, message: 'Please input your full name!' }]}
+          >
+            <Input placeholder="Enter your full name" />
+          </Form.Item>
+
+          <Form.Item
+            label="Gender"
+            name="gender"
+            rules={[{ required: true, message: 'Please select your gender!' }]}
+          >
+            <Select placeholder="Select your gender">
+              <Option value={UserGender.MALE}>Male</Option>
+              <Option value={UserGender.FEMALE}>Female</Option>
+              <Option value={UserGender.OTHER}>Other</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%' }} size="middle">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                icon={<EditOutlined />}
+                style={{ width: '100%' }}
+              >
+                Update Profile
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditModalVisible(false);
+                  form.resetFields();
+                }}
+                style={{ width: '100%' }}
+              >
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

@@ -29,6 +29,7 @@ import {
   FilterOutlined,
   ClearOutlined,
   ShoppingCartOutlined,
+  TagOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import api from "../api/axios";
@@ -54,6 +55,8 @@ export default function AdminDashboard() {
     number | undefined
   >();
   const [form] = Form.useForm();
+  const [tagModalVisible, setTagModalVisible] = useState(false);
+  const [tagForm] = Form.useForm();
 
   // Business Stats
   const totalInventory = pets.length;
@@ -138,6 +141,14 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: number) => {
+    const pet = pets.find((p) => p.id === id);
+
+    // Check if pet is sold (has been adopted)
+    if (pet?.status === PetStatus.SOLD) {
+      message.warning("Cannot delete a pet that has been adopted!");
+      return;
+    }
+
     try {
       await api.delete(`/pets/${id}`);
       message.success("Pet deleted successfully!");
@@ -145,6 +156,22 @@ export default function AdminDashboard() {
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || "Failed to delete pet";
       message.error(errorMsg);
+    }
+  };
+
+  const handleCreateTag = async (values: { name: string }) => {
+    try {
+      setSubmitting(true);
+      await api.post("/tags", values);
+      message.success("Tag created successfully!");
+      setTagModalVisible(false);
+      tagForm.resetFields();
+      fetchTags();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || "Failed to create tag";
+      message.error(errorMsg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -342,6 +369,14 @@ export default function AdminDashboard() {
         >
           Add New Pet
         </Button>
+        <Button
+          type="default"
+          icon={<TagOutlined />}
+          size="large"
+          onClick={() => setTagModalVisible(true)}
+        >
+          Add New Tag
+        </Button>
       </div>
 
       {/* Business Stats Cards */}
@@ -515,9 +550,7 @@ export default function AdminDashboard() {
           <Form.Item
             label="Description"
             name="description"
-            rules={[
-              { required: !editingPet, message: "Please input description!" },
-            ]}
+            rules={[{ required: true, message: "Please input description!" }]}
           >
             <TextArea
               rows={3}
@@ -573,6 +606,61 @@ export default function AdminDashboard() {
                   setEditingPet(null);
                   form.resetFields();
                 }}
+              >
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Create Tag Modal */}
+      <Modal
+        title={
+          <Space>
+            <TagOutlined />
+            <span>Add New Tag</span>
+          </Space>
+        }
+        open={tagModalVisible}
+        onCancel={() => {
+          setTagModalVisible(false);
+          tagForm.resetFields();
+        }}
+        footer={null}
+        width={400}
+      >
+        <Form
+          form={tagForm}
+          layout="vertical"
+          onFinish={handleCreateTag}
+          size="large"
+        >
+          <Form.Item
+            label="Tag Name"
+            name="name"
+            rules={[{ required: true, message: "Please input tag name!" }]}
+          >
+            <Input placeholder="e.g., Cute, Playful, Friendly" />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: "100%" }} size="middle">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                icon={<TagOutlined />}
+                style={{ width: "100%" }}
+              >
+                Create Tag
+              </Button>
+              <Button
+                onClick={() => {
+                  setTagModalVisible(false);
+                  tagForm.resetFields();
+                }}
+                style={{ width: "100%" }}
               >
                 Cancel
               </Button>
